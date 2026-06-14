@@ -1,0 +1,19 @@
+{
+  "firestore": {
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "love-lang-c78dd",
+          "configurations": {
+            "android": "1:76237350372:android:b4d4849c916187c77f93f1",
+            "ios": "1:76237350372:ios:994bfedf3e8953997f93f1",
+            "web": "1:76237350372:web:f4653b24ac2e16937f93f1"
+          }
+        }
+      }
+    }
+  }
+}
