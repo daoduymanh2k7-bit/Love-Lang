@@ -73,6 +73,11 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
     final albumState = ref.watch(albumNotifierProvider);
     final isUploading = albumState is AlbumLoading;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? null : const Color(0xFFFBE4D8);
+    final cardColor = isDark ? null : const Color(0xFFFFF7EC);
+    final accentColor = const Color(0xFFE8889A);
+
     // Hiển thị trạng thái upload
     ref.listen<AlbumState>(albumNotifierProvider, (previous, next) {
       if (next is AlbumLoaded) {
@@ -91,52 +96,69 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
     });
 
     return Scaffold(
-      backgroundColor: Colors.black87,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(widget.album.title,
-            style: const TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          if (isUploading)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white)),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.add_a_photo),
-              onPressed: _pickAndUploadImages,
-            ),
-        ],
+        title: Text(
+          widget.album.title,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: IconThemeData(color: isDark ? Colors.white : accentColor),
+        centerTitle: true,
       ),
       body: photosStream.when(
         data: (photos) {
           final displayPhotos = photos;
 
-          if (photos.isEmpty) {
-          return const Center(
-            child: Text(
-              'Chưa có ảnh nào',
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-          );
-        }
-
           return GridView.builder(
+            padding: const EdgeInsets.all(12),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              mainAxisSpacing: 0,
-              crossAxisSpacing: 0,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
               childAspectRatio: 1,
             ),
-            itemCount: displayPhotos.length,
+            itemCount: displayPhotos.length + 1,
             itemBuilder: (context, index) {
+              if (index == displayPhotos.length) {
+                return GestureDetector(
+                  onTap: isUploading ? null : _pickAndUploadImages,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: cardColor ?? const Color(0xFFFFF7EC),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: isUploading
+                          ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: accentColor,
+                              ),
+                            )
+                          : Icon(
+                              Icons.add,
+                              color: accentColor,
+                              size: 32,
+                            ),
+                    ),
+                  ),
+                );
+              }
+
               final photo = displayPhotos[index];
               return GestureDetector(
                 onTap: () {
@@ -166,16 +188,19 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                 },
                 child: Hero(
                   tag: photo.id,
-                  child: CachedNetworkImage(
-                    imageUrl: photo.url,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[200],
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      imageUrl: photo.url,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: isDark ? Colors.white12 : Colors.grey[200],
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: isDark ? Colors.white12 : Colors.grey[200],
+                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                      ),
                     ),
                   ),
                 ),
@@ -184,10 +209,10 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
           );
         },
         loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
+            Center(child: CircularProgressIndicator(color: accentColor)),
         error: (err, stack) => Center(
             child:
-                Text('Lỗi: $err', style: const TextStyle(color: Colors.red))),
+                Text('Lỗi: $err', style: TextStyle(color: accentColor))),
       ),
     );
   }

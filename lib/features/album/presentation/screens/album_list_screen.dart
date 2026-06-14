@@ -70,6 +70,10 @@ class AlbumListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albumsStream = ref.watch(albumsProvider(coupleId));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? null : const Color(0xFFFBE4D8);
+    final cardColor = isDark ? null : const Color(0xFFFFF7EC);
+    final accentColor = const Color(0xFFE8889A);
 
     // Lắng nghe trạng thái tạo album để báo lỗi hoặc thành công (nếu cần)
     ref.listen<AlbumState>(albumNotifierProvider, (previous, next) {
@@ -81,9 +85,13 @@ class AlbumListScreen extends ConsumerWidget {
     });
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Kho Ảnh Kỷ Niệm'),
+        title: const Text('Kho Ảnh Kỷ Niệm', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         centerTitle: true,
+        iconTheme: IconThemeData(color: isDark ? Colors.white : accentColor),
       ),
       body: albumsStream.when(
         data: (albums) {
@@ -122,7 +130,7 @@ class AlbumListScreen extends ConsumerWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    color: Colors.white,
+                    color: cardColor ?? Colors.white,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
@@ -144,10 +152,10 @@ class AlbumListScreen extends ConsumerWidget {
                                 data: (photos) {
                                   if (photos.isEmpty) {
                                     return Container(
-                                      color: Colors.grey[100],
-                                      child: const Icon(
+                                      color: isDark ? Colors.white12 : Colors.grey[100],
+                                      child: Icon(
                                         Icons.camera_alt,
-                                        color: Colors.grey,
+                                        color: isDark ? Colors.white38 : Colors.grey,
                                         size: 40,
                                       ),
                                     );
@@ -188,14 +196,21 @@ class AlbumListScreen extends ConsumerWidget {
                           children: [
                             Text(
                               album.title,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '${album.createdAt.day}/${album.createdAt.month}/${album.createdAt.year}',
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark ? Colors.white38 : Colors.grey.shade600,
+                              ),
                             ),
                           ],
                         ),
@@ -212,7 +227,7 @@ class AlbumListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateAlbumDialog(context, ref),
-        backgroundColor: Colors.pinkAccent,
+        backgroundColor: accentColor,
         icon: const Icon(Icons.add_photo_alternate),
         label: const Text('Tạo Album'),
       ),
