@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:flutter/foundation.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import '../../../../core/constants/firestore_paths.dart';
 import '../models/album_model.dart';
@@ -83,7 +83,7 @@ class AlbumRemoteDataSource {
 
         batch.set(photosRef.doc(photoId), photoModel.toFirestore());
       } catch (e) {
-        print('Cloudinary upload error: $e');
+        debugPrint('Cloudinary upload error: $e');
         // Optionally you could rethrow or handle differently
       }
     }).toList();

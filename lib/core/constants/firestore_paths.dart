@@ -35,6 +35,7 @@ abstract final class FirestorePaths {
   static const String coupleUid2 = 'uid2';
   static const String couplePairedAt = 'pairedAt';
   static const String coupleStatus = 'status';
+  static const String coupleNudgeCount = 'nudgeCount';
 
   // ─── Field Names: User Document ───────────────────────────────────────────
   static const String userCoupleId = 'coupleId';

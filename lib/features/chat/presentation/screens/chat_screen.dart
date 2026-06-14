@@ -3,7 +3,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
+
 import 'package:love_lang/features/chat/presentation/providers/chat_provider.dart';
 import 'package:love_lang/features/chat/presentation/widgets/message_bubble.dart';
 import 'package:record/record.dart';
@@ -33,8 +33,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   late final AudioRecorder _audioRecorder;
   bool _isRecording = false;
 
-  // Lấy danh sách tin nhắn cũ để so sánh xem có tin mới không
-  List<MessageEntity> _previousMessages = [];
+
 
   @override
   void initState() {
@@ -114,27 +113,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Bắt sự kiện Stream thay đổi
-    ref.listen(chatMessagesProvider(widget.coupleId), (previous, next) {
-      if (next.hasValue && next.value != null) {
-        final newMessages = next.value!;
-        
-        // Kiểm tra xem có tin nhắn Nudge mới từ đối phương không
-        if (_previousMessages.isNotEmpty && newMessages.isNotEmpty) {
-          final isNewMessageAdded = newMessages.length > _previousMessages.length ||
-              newMessages.first.id != _previousMessages.first.id;
-          
-          if (isNewMessageAdded) {
-            final latestMsg = newMessages.first; // Vì danh sách đã order descending
-            // Nếu là nudge và không phải mình gửi -> Rung thiết bị!
-            if (latestMsg.isNudge && latestMsg.senderId != widget.myUid) {
-              _handleDeviceVibration();
-            }
-          }
+    // Listen for chat messages updates (no vibration logic needed)
+    // Listen for nudge count changes to trigger device vibration
+    ref.listen(nudgeCountProvider(widget.coupleId), (previous, next) {
+      if (next.hasValue && previous?.hasValue == true) {
+        final newCount = next.value!;
+        final oldCount = previous!.value!;
+        if (newCount > oldCount) {
+          _handleDeviceVibration();
         }
-        _previousMessages = newMessages;
       }
     });
+
 
     final messagesStream = ref.watch(chatMessagesProvider(widget.coupleId));
 
@@ -146,11 +136,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         foregroundColor: Colors.pinkAccent,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.touch_app),
-            tooltip: 'Chọc ghẹo đối phương!',
-            onPressed: _sendNudge,
-          ),
+          Consumer(builder: (context, ref, _) {
+            final nudgeCountAsync = ref.watch(nudgeCountProvider(widget.coupleId));
+            return nudgeCountAsync.when(
+              data: (count) => InkWell(
+                onTap: _sendNudge,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text('❤️ x$count',
+                      style: const TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const Icon(Icons.error),
+            );
+          }),
         ],
       ),
       body: Column(
@@ -160,28 +164,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: messagesStream.when(
               loading: () => const Center(child: CircularProgressIndicator(color: Colors.pinkAccent)),
               error: (err, stack) => Center(child: Text('Lỗi: $err')),
-              data: (messages) {
-                if (messages.isEmpty) {
-                  return const Center(
-                    child: Text('Hãy gửi lời chào ngọt ngào nhất nào!', style: TextStyle(color: Colors.grey)),
-                  );
-                }
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  reverse: true, // Tin nhắn mới nhất nằm dưới cùng (do Firebase sort desc)
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    final isMe = message.senderId == widget.myUid;
-                    
-                    return MessageBubble(
-                      message: message,
-                      isMe: isMe,
+                data: (messages) {
+                  if (messages.isEmpty) {
+                    return const Center(
+                      child: Text('Hãy gửi lời chào ngọt ngào nhất nào!', style: TextStyle(color: Colors.grey)),
                     );
-                  },
-                );
-              },
+                  }
+
+                  // Filter out nudge messages
+                  final filtered = messages.where((m) => !m.isNudge).toList();
+                  if (filtered.isEmpty) {
+                    return const Center(
+                      child: Text('Không có tin nhắn nào.', style: TextStyle(color: Colors.grey)),
+                    );
+                  }
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    reverse: true,
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final message = filtered[index];
+                      final isMe = message.senderId == widget.myUid;
+                      return MessageBubble(
+                        message: message,
+                        isMe: isMe,
+                      );
+                    },
+                  );
+                },
             ),
           ),
           

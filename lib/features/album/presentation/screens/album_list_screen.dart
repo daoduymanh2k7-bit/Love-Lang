@@ -73,7 +73,7 @@ class AlbumListScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? null : const Color(0xFFFBE4D8);
     final cardColor = isDark ? null : const Color(0xFFFFF7EC);
-    final accentColor = const Color(0xFFE8889A);
+    const accentColor = Color(0xFFE8889A);
 
     // Lắng nghe trạng thái tạo album để báo lỗi hoặc thành công (nếu cần)
     ref.listen<AlbumState>(albumNotifierProvider, (previous, next) {

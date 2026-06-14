@@ -76,7 +76,7 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? null : const Color(0xFFFBE4D8);
     final cardColor = isDark ? null : const Color(0xFFFFF7EC);
-    final accentColor = const Color(0xFFE8889A);
+    const accentColor = Color(0xFFE8889A);
 
     // Hiển thị trạng thái upload
     ref.listen<AlbumState>(albumNotifierProvider, (previous, next) {
@@ -141,7 +141,7 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                     ),
                     child: Center(
                       child: isUploading
-                          ? SizedBox(
+                          ? const SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
@@ -149,7 +149,7 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                                 color: accentColor,
                               ),
                             )
-                          : Icon(
+                          : const Icon(
                               Icons.add,
                               color: accentColor,
                               size: 32,
@@ -209,10 +209,10 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
           );
         },
         loading: () =>
-            Center(child: CircularProgressIndicator(color: accentColor)),
+            const Center(child: CircularProgressIndicator(color: accentColor)),
         error: (err, stack) => Center(
             child:
-                Text('Lỗi: $err', style: TextStyle(color: accentColor))),
+                Text('Lỗi: $err', style: const TextStyle(color: accentColor))),
       ),
     );
   }

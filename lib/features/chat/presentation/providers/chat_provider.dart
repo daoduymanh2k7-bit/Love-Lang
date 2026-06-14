@@ -10,7 +10,10 @@ import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
 import 'package:love_lang/features/chat/domain/repositories/chat_repository.dart';
 import 'package:love_lang/features/chat/domain/usecases/send_message_usecase.dart';
 import 'package:love_lang/features/chat/domain/usecases/watch_messages_usecase.dart';
+import 'package:love_lang/core/constants/firestore_paths.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_state.dart';
+
+final chatSendNotifierProvider = AutoDisposeNotifierProvider<ChatSendNotifier, ChatSendState>(ChatSendNotifier.new);
 
 // ─── DI Providers ────────────────────────────────────────────────────────────
 
@@ -73,20 +76,14 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
     }
   }
 
-  /// Gửi tin nhắn Chọc ghẹo (Nudge)
+  /// Gửi tin nhắn Chọc ghẹo (Nudge) – now increments nudge count only
   Future<void> sendNudge(String coupleId, String senderId) async {
     state = const ChatSendLoading();
     try {
-      final usecase = ref.read(sendMessageUseCaseProvider);
-      final message = MessageEntity(
-        id: '',
-        senderId: senderId,
-        coupleId: coupleId,
-        content: 'Đã chọc ghẹo đối phương',
-        type: MessageType.nudge,
-        timestamp: DateTime.now(),
-      );
-      await usecase(message);
+      // Increment the nudgeCount field in the couple document
+      final coupleRef = FirebaseFirestore.instance.doc(FirestorePaths.coupleDoc(coupleId));
+      await coupleRef.update({FirestorePaths.coupleNudgeCount: FieldValue.increment(1)});
+      // No chat message is created; the partner will receive vibration via listener on count change
       state = const ChatSendSuccess();
     } on Failure catch (e) {
       state = ChatSendError(e.message);
@@ -110,6 +107,6 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
   }
 }
 
-final chatSendNotifierProvider = AutoDisposeNotifierProvider<ChatSendNotifier, ChatSendState>(
-  ChatSendNotifier.new,
-);
+final nudgeCountProvider = StreamProvider.autoDispose.family<int, String>((ref, coupleId) {
+  return FirebaseFirestore.instance.doc(FirestorePaths.coupleDoc(coupleId)).snapshots().map((snap) => (snap.data()?['nudgeCount'] as int?) ?? 0);
+});
