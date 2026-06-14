@@ -111,10 +111,11 @@ class BucketListNotifier extends StateNotifier<AsyncValue<void>> {
     String coupleId,
     String itemId, {
     String? linkedAlbumId,
+    String? completionImageUrl,
   }) async {
     state = const AsyncLoading();
     try {
-      await _markDoneUseCase(coupleId, itemId, linkedAlbumId: linkedAlbumId);
+      await _markDoneUseCase(coupleId, itemId, linkedAlbumId: linkedAlbumId, completionImageUrl: completionImageUrl);
       state = const AsyncData(null);
     } on Failure catch (e) {
       state = AsyncError(e, StackTrace.current);
@@ -122,6 +123,7 @@ class BucketListNotifier extends StateNotifier<AsyncValue<void>> {
       state = AsyncError(e, StackTrace.current);
     }
   }
+
 }
 
 final bucketListNotifierProvider =

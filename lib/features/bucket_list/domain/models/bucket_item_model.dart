@@ -14,6 +14,7 @@ class BucketItemModel extends BucketItemEntity {
     required super.createdAt,
     required super.createdBy,
     super.linkedAlbumId,
+    super.completionImageUrl,
   });
 
   factory BucketItemModel.fromFirestore(DocumentSnapshot doc, String? idOverride) {
@@ -28,6 +29,7 @@ class BucketItemModel extends BucketItemEntity {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       createdBy: data['createdBy'] ?? '',
       linkedAlbumId: data['linkedAlbumId'],
+      completionImageUrl: data['completionImageUrl'],
     );
   }
 
@@ -40,6 +42,7 @@ class BucketItemModel extends BucketItemEntity {
         'createdAt': Timestamp.fromDate(createdAt),
         'createdBy': createdBy,
         if (linkedAlbumId != null) 'linkedAlbumId': linkedAlbumId,
+        if (completionImageUrl != null) 'completionImageUrl': completionImageUrl,
       };
 
   Map<String, dynamic> toFirestoreUpdate() => {
@@ -48,5 +51,6 @@ class BucketItemModel extends BucketItemEntity {
         'isDone': isDone,
         if (completedAt != null) 'completedAt': Timestamp.fromDate(completedAt!),
         if (linkedAlbumId != null) 'linkedAlbumId': linkedAlbumId,
+        if (completionImageUrl != null) 'completionImageUrl': completionImageUrl,
       };
 }

@@ -1,11 +1,11 @@
 // lib/features/bucket_list/presentation/widgets/complete_bucket_item_dialog.dart
 
+import 'package:image_picker/image_picker.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/bucket_item_entity.dart';
 import '../providers/bucket_list_provider.dart';
-import '../../../album/domain/entities/album_entity.dart';
-import '../../../album/presentation/providers/album_provider.dart';
 
 /// Dialog hiện khi tick "hoàn thành" một bucket item.
 /// Hỏi người dùng có muốn tạo album kỷ niệm liên kết không.
@@ -40,45 +40,37 @@ class _CompleteItemDialogState extends ConsumerState<_CompleteItemDialog> {
     if (mounted) Navigator.pop(context);
   }
 
-  Future<void> _completeWithAlbum() async {
-    // Đóng dialog trước
-    if (mounted) Navigator.pop(context);
 
-    // Mở bottom sheet để đặt tên album
-    if (!mounted) return;
-    final albumTitle = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _CreateAlbumSheet(suggestedTitle: widget.item.title),
-    );
 
-    if (albumTitle == null || albumTitle.trim().isEmpty) {
-      // Người dùng huỷ → vẫn đánh dấu done nhưng không tạo album
-      await ref
-          .read(bucketListNotifierProvider.notifier)
-          .markDone(widget.item.coupleId, widget.item.id);
+  Future<void> _completeWithImage() async {
+    setState(() => _isLoading = true);
+    final picker = ImagePicker();
+    final XFile? picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) {
+      setState(() => _isLoading = false);
       return;
     }
-
-    // Tạo album
-    final newAlbum = AlbumEntity(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      coupleId: widget.item.coupleId,
-      title: albumTitle.trim(),
-      coverUrl: 'https://picsum.photos/seed/${widget.item.id}/400/400',
-      description: 'Kỷ niệm: ${widget.item.title}',
-      createdAt: DateTime.now(),
-    );
-
-    final albumId =
-        await ref.read(albumNotifierProvider.notifier).createAlbum(newAlbum);
-
-    // Đánh dấu done + gắn albumId
-    await ref
-        .read(bucketListNotifierProvider.notifier)
-        .markDone(widget.item.coupleId, widget.item.id,
-            linkedAlbumId: albumId);
+    try {
+        final cloudinary = CloudinaryPublic('dq3bk50q9', 'love_lang_bucket');
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final publicId = '${widget.item.id}_$timestamp';
+        final response = await cloudinary.uploadFile(
+          CloudinaryFile.fromFile(
+            picked.path,
+            resourceType: CloudinaryResourceType.Image,
+            publicId: publicId,
+          ),
+        );
+      final imageUrl = response.secureUrl;
+      await ref
+          .read(bucketListNotifierProvider.notifier)
+          .markDone(widget.item.coupleId, widget.item.id,
+              completionImageUrl: imageUrl);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      // Simple error handling – could show a snackbar
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -128,7 +120,6 @@ class _CompleteItemDialogState extends ConsumerState<_CompleteItemDialog> {
               ),
             ]
           : [
-              // Nút "Không"
               OutlinedButton(
                 onPressed: _completeWithoutAlbum,
                 style: OutlinedButton.styleFrom(
@@ -136,13 +127,12 @@ class _CompleteItemDialogState extends ConsumerState<_CompleteItemDialog> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Không, cảm ơn'),
+                child: const Text('Bỏ qua'),
               ),
-              // Nút "Tạo kỷ niệm"
               ElevatedButton.icon(
-                onPressed: _completeWithAlbum,
-                icon: const Icon(Icons.photo_album_rounded, size: 18),
-                label: const Text('Tạo kỷ niệm'),
+                onPressed: _completeWithImage,
+                icon: const Icon(Icons.photo_camera_rounded, size: 18),
+                label: const Text('Thêm ảnh 📷'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE8889A),
                   foregroundColor: Colors.white,
@@ -223,9 +213,9 @@ class _CreateAlbumSheetState extends State<_CreateAlbumSheet> {
             decoration: InputDecoration(
               hintText: 'Tên album...',
               filled: true,
-              fillColor: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : const Color(0xFFF8F8FC),
+                fillColor: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : const Color(0xFFF8F8FC),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,

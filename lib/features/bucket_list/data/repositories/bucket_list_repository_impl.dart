@@ -81,10 +81,15 @@ class BucketListRepositoryImpl implements BucketListRepository {
     String coupleId,
     String itemId, {
     String? linkedAlbumId,
+    String? completionImageUrl,
   }) async {
     try {
-      await _remoteDataSource.markDone(coupleId, itemId,
-          linkedAlbumId: linkedAlbumId);
+      await _remoteDataSource.markDone(
+        coupleId,
+        itemId,
+        linkedAlbumId: linkedAlbumId,
+        completionImageUrl: completionImageUrl,
+      );
     } on FirebaseException catch (e) {
       throw ServerFailure(message: e.message ?? 'Lỗi khi đánh dấu hoàn thành');
     } catch (e) {

@@ -13,6 +13,7 @@ class BucketItemEntity {
   final DateTime createdAt;
   final String createdBy;
   final String? linkedAlbumId;
+  final String? completionImageUrl;
 
   const BucketItemEntity({
     required this.id,
@@ -24,6 +25,7 @@ class BucketItemEntity {
     required this.createdAt,
     required this.createdBy,
     this.linkedAlbumId,
+    this.completionImageUrl,
   });
 
   BucketItemEntity copyWith({
@@ -36,9 +38,12 @@ class BucketItemEntity {
     DateTime? createdAt,
     String? createdBy,
     String? linkedAlbumId,
+    String? completionImageUrl,
   }) {
     return BucketItemEntity(
       id: id ?? this.id,
+      linkedAlbumId: linkedAlbumId ?? this.linkedAlbumId,
+      completionImageUrl: completionImageUrl ?? this.completionImageUrl,
       coupleId: coupleId ?? this.coupleId,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -46,7 +51,7 @@ class BucketItemEntity {
       completedAt: completedAt ?? this.completedAt,
       createdAt: createdAt ?? this.createdAt,
       createdBy: createdBy ?? this.createdBy,
-      linkedAlbumId: linkedAlbumId ?? this.linkedAlbumId,
+
     );
   }
 

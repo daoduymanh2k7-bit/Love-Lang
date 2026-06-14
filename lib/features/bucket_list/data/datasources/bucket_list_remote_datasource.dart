@@ -49,6 +49,7 @@ class BucketListRemoteDataSource {
     String coupleId,
     String itemId, {
     String? linkedAlbumId,
+    String? completionImageUrl,
   }) async {
     final Map<String, dynamic> updates = {
       'isDone': true,
@@ -56,6 +57,9 @@ class BucketListRemoteDataSource {
     };
     if (linkedAlbumId != null) {
       updates['linkedAlbumId'] = linkedAlbumId;
+    }
+    if (completionImageUrl != null) {
+      updates['completionImageUrl'] = completionImageUrl;
     }
     await _firestore
         .collection(FirestorePaths.bucketItems(coupleId))

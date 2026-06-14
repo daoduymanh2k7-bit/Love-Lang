@@ -17,6 +17,7 @@ dependencies:
   path_provider: any
   permission_handler: any
   image_picker: any
+  cloudinary_public: ^0.23.1
   firebase_auth: ^6.5.2
   firebase_core: ^4.10.0
   shared_preferences: ^2.2.0

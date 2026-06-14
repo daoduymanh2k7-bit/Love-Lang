@@ -234,7 +234,7 @@ class _BucketListScreenState extends ConsumerState<BucketListScreen>
                 style: TextStyle(
                   fontSize: 14,
                   // ignore: deprecated_member_use
-color: Colors.white.withOpacity(0.85),
+color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
               const SizedBox(height: 20),
@@ -268,7 +268,7 @@ color: Colors.white.withOpacity(0.85),
                               value: value,
                               minHeight: 8,
                               // ignore: deprecated_member_use
-backgroundColor: Colors.white.withOpacity(0.3),
+backgroundColor: Colors.white.withValues(alpha: 0.3),
                               valueColor: const AlwaysStoppedAnimation(
                                   Colors.white),
                             ),
@@ -284,7 +284,7 @@ backgroundColor: Colors.white.withOpacity(0.3),
                         horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       // ignore: deprecated_member_use
-color: Colors.white.withOpacity(0.2),
+color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -319,11 +319,11 @@ class _EmptyTodo extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         // ignore: deprecated_member_use
-color: Colors.white.withOpacity(0.5),
+color: Colors.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           // ignore: deprecated_member_use
-color: const Color(0xFFE8889A).withOpacity(0.3),
+color: const Color(0xFFE8889A).withValues(alpha: 0.3),
           width: 1.5,
           style: BorderStyle.solid,
         ),

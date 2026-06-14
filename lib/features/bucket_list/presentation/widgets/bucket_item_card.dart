@@ -91,13 +91,7 @@ class BucketItemCard extends ConsumerWidget {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
         ),
         child: Material(
           color: Colors.transparent,
@@ -125,6 +119,20 @@ class BucketItemCard extends ConsumerWidget {
                   const SizedBox(width: 12),
 
                   // Nội dung
+                  if (item.completionImageUrl != null) ...[
+                    Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: NetworkImage(item.completionImageUrl!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
