@@ -136,13 +136,43 @@ class AlbumListScreen extends ConsumerWidget {
                       Expanded(
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                          child: Image.network(
-                            album.coverUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                            ),
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final photosStream = ref.watch(photosProvider(album.id));
+                              return photosStream.when(
+                                data: (photos) {
+                                  if (photos.isEmpty) {
+                                    return Container(
+                                      color: Colors.grey[100],
+                                      child: const Icon(
+                                        Icons.camera_alt,
+                                        color: Colors.grey,
+                                        size: 40,
+                                      ),
+                                    );
+                                  }
+                                  return Image.network(
+                                    photos.first.url,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      color: Colors.grey[200],
+                                      child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                    ),
+                                  );
+                                },
+                                loading: () => const Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                ),
+                                error: (err, stack) => Container(
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),

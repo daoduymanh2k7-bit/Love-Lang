@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+
 import '../../domain/entities/album_entity.dart';
 import '../../domain/entities/photo_entity.dart';
 import '../../domain/usecases/watch_albums_usecase.dart';
@@ -14,10 +14,10 @@ import '../../../../core/error/failures.dart';
 
 // Providers for dependencies
 final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
-final firebaseStorageProvider = Provider<FirebaseStorage>((ref) => FirebaseStorage.instance);
+
 
 final albumRemoteDataSourceProvider = Provider<AlbumRemoteDataSource>((ref) {
-  return AlbumRemoteDataSource(ref.watch(firestoreProvider), ref.watch(firebaseStorageProvider));
+  return AlbumRemoteDataSource(ref.watch(firestoreProvider));
 });
 
 final albumRepositoryProvider = Provider<AlbumRepositoryImpl>((ref) {

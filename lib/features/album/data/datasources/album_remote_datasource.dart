@@ -1,15 +1,17 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+
+import 'package:cloudinary_public/cloudinary_public.dart';
 import '../../../../core/constants/firestore_paths.dart';
 import '../models/album_model.dart';
 import '../models/photo_model.dart';
 
 class AlbumRemoteDataSource {
-  final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
 
-  AlbumRemoteDataSource(this._firestore, this._storage);
+
+    final FirebaseFirestore _firestore;
+
+  AlbumRemoteDataSource(this._firestore);
 
   Stream<List<AlbumModel>> watchAlbums(String coupleId) {
     return _firestore
@@ -52,32 +54,38 @@ class AlbumRemoteDataSource {
         .doc(albumId)
         .collection('photos');
 
-    // Tạo danh sách Future để upload ảnh song song
+    // Create a Cloudinary instance (unsigned preset)
+    final cloudinary = CloudinaryPublic('dq3bk50q9', 'love_lang_bucket', cache: false);
+    // Upload each file to Cloudinary and collect the secure URL
     final uploadTasks = localFilePaths.map((filePath) async {
       final file = File(filePath);
       if (!await file.exists()) return;
 
-      final fileName =
-          '${DateTime.now().microsecondsSinceEpoch}_${filePath.split('/').last}';
-      final storageRef =
-          _storage.ref().child('couples/$coupleId/albums/$albumId/$fileName');
+      try {
+        final response = await cloudinary.uploadFile(
+          CloudinaryFile.fromFile(
+            file.path,
+            resourceType: CloudinaryResourceType.Image,
+          ),
+        );
+        final secureUrl = response.secureUrl;
 
-      // Upload file lên Firebase Storage
-      final uploadTask = await storageRef.putFile(file);
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
+        // Prepare Firestore data for the photo
+        final photoId = photosRef.doc().id;
+        final photoModel = PhotoModel(
+          id: photoId,
+          albumId: albumId,
+          uploadedById: uploaderId,
+          url: secureUrl, // Store Cloudinary secure URL
+          description: '',
+          createdAt: DateTime.now(),
+        );
 
-      // Chuẩn bị dữ liệu PhotoModel để lưu vào Firestore
-      final photoId = photosRef.doc().id;
-      final photoModel = PhotoModel(
-        id: photoId,
-        albumId: albumId,
-        uploadedById: uploaderId,
-        url: downloadUrl,
-        description: '',
-        createdAt: DateTime.now(),
-      );
-
-      batch.set(photosRef.doc(photoId), photoModel.toFirestore());
+        batch.set(photosRef.doc(photoId), photoModel.toFirestore());
+      } catch (e) {
+        print('Cloudinary upload error: $e');
+        // Optionally you could rethrow or handle differently
+      }
     }).toList();
 
     // Chờ tất cả file upload xong
