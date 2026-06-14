@@ -45,7 +45,12 @@ class _CompleteItemDialogState extends ConsumerState<_CompleteItemDialog> {
   Future<void> _completeWithImage() async {
     setState(() => _isLoading = true);
     final picker = ImagePicker();
-    final XFile? picked = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+      maxWidth: 1080,
+      maxHeight: 1080,
+    );
     if (picked == null) {
       setState(() => _isLoading = false);
       return;

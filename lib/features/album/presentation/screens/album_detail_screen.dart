@@ -49,7 +49,11 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
     } catch (_) {
       // ignore if permission package not available
     }
-    final List<XFile> picked = await _picker.pickMultiImage();
+    final List<XFile> picked = await _picker.pickMultiImage(
+      imageQuality: 70,
+      maxWidth: 1080,
+      maxHeight: 1080,
+    );
     if (picked.isEmpty) {
       return;
     }
