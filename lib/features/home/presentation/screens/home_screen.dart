@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:love_lang/core/presentation/providers/main_tab_provider.dart';
 import 'package:love_lang/features/pairing/presentation/providers/pairing_provider.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_provider.dart';
@@ -782,9 +783,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                               children: [
                                 Positioned.fill(
                                   child: album.coverUrl.isNotEmpty
-                                      ? Image.network(
-                                          album.coverUrl,
+                                      ? CachedNetworkImage(
+                                          imageUrl: album.coverUrl,
                                           fit: BoxFit.cover,
+                                          placeholder: (context, url) => Container(
+                                            color: Colors.grey[200],
+                                            child: const Center(child: CircularProgressIndicator()),
+                                          ),
+                                          errorWidget: (context, url, error) => Container(
+                                            color: Colors.grey[200],
+                                            child: const Icon(Icons.broken_image, color: Colors.grey),
+                                          ),
                                         )
                                       : Container(
                                           color: const Color(0xFFFFF7EC),

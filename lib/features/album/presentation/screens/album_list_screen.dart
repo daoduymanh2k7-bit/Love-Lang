@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/album_entity.dart';
 import '../providers/album_provider.dart';
 import '../providers/album_state.dart';
@@ -151,12 +152,16 @@ class AlbumListScreen extends ConsumerWidget {
                                       ),
                                     );
                                   }
-                                  return Image.network(
-                                    photos.first.url,
+                                  return CachedNetworkImage(
+                                    imageUrl: photos.first.url,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => Container(
+                                    placeholder: (context, url) => Container(
                                       color: Colors.grey[200],
-                                      child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                      child: const Center(child: CircularProgressIndicator()),
+                                    ),
+                                    errorWidget: (context, url, error) => Container(
+                                      color: Colors.grey[200],
+                                      child: const Icon(Icons.broken_image, color: Colors.grey),
                                     ),
                                   );
                                 },

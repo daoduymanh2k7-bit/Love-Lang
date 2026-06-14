@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../domain/entities/album_entity.dart';
@@ -151,9 +152,11 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                         ),
                         body: Center(
                           child: InteractiveViewer(
-                            child: Image.network(
-                              photo.url,
+                            child: CachedNetworkImage(
+                              imageUrl: photo.url,
                               fit: BoxFit.contain,
+                              placeholder: (context, url) => const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white),
                             ),
                           ),
                         ),
@@ -163,11 +166,16 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                 },
                 child: Hero(
                   tag: photo.id,
-                  child: Image.network(
-                    photo.url,
+                  child: CachedNetworkImage(
+                    imageUrl: photo.url,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(Icons.broken_image, color: Colors.white, size: 30),
+                    placeholder: (context, url) => Container(
+                      color: Colors.grey[200],
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.broken_image, color: Colors.grey),
                     ),
                   ),
                 ),

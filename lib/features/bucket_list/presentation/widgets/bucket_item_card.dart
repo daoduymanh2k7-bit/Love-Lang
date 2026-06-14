@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/bucket_item_entity.dart';
 import '../providers/bucket_list_provider.dart';
 import 'add_edit_bucket_item_sheet.dart';
@@ -124,11 +125,25 @@ class BucketItemCard extends ConsumerWidget {
                       margin: const EdgeInsets.only(right: 8),
                       width: 40,
                       height: 40,
-                      decoration: BoxDecoration(
+                      child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: NetworkImage(item.completionImageUrl!),
+                        child: CachedNetworkImage(
+                          imageUrl: item.completionImageUrl!,
                           fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.broken_image, size: 16, color: Colors.grey),
+                          ),
                         ),
                       ),
                     ),
