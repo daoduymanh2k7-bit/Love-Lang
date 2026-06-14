@@ -63,15 +63,18 @@ class AlbumNotifier extends StateNotifier<AlbumState> {
         _uploadUseCase = uploadUseCase,
         super(const AlbumInitial());
 
-  Future<void> createAlbum(AlbumEntity album) async {
+  Future<String?> createAlbum(AlbumEntity album) async {
     state = const AlbumLoading();
     try {
-      await _createUseCase(album);
+      final albumId = await _createUseCase(album);
       state = const AlbumLoaded();
+      return albumId;
     } on Failure catch (e) {
       state = AlbumError(e.message);
+      return null;
     } catch (e) {
       state = const AlbumError('Đã có lỗi xảy ra khi tạo Album.');
+      return null;
     }
   }
 

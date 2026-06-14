@@ -38,9 +38,10 @@ class AlbumRemoteDataSource {
     });
   }
 
-  Future<void> createAlbum(AlbumModel album) async {
+  Future<String> createAlbum(AlbumModel album) async {
     final docRef = _firestore.collection(FirestorePaths.albums).doc(album.id);
     await docRef.set(album.toFirestore());
+    return docRef.id;
   }
 
   Future<void> uploadPhotos(String albumId, String coupleId, String uploaderId,

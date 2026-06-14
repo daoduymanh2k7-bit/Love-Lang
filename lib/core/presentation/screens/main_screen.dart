@@ -5,6 +5,7 @@ import 'package:love_lang/features/home/presentation/screens/home_screen.dart';
 import 'package:love_lang/features/chat/presentation/screens/chat_screen.dart';
 import 'package:love_lang/features/diary/presentation/screens/diary_list_screen.dart';
 import 'package:love_lang/features/album/presentation/screens/album_list_screen.dart';
+import 'package:love_lang/features/bucket_list/presentation/screens/bucket_list_screen.dart';
 import 'package:love_lang/features/profile/presentation/screens/profile_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -43,6 +44,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         currentUserId: widget.currentUserId,
       ),
       AlbumListScreen(
+        coupleId: widget.coupleId,
+        currentUserId: widget.currentUserId,
+      ),
+      BucketListScreen(
         coupleId: widget.coupleId,
         currentUserId: widget.currentUserId,
       ),
@@ -86,7 +91,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 _buildNavItem(1, Icons.chat_bubble_rounded, Icons.chat_bubble_outline_rounded, 'Nhắn tin', currentIndex, isDark),
                 _buildNavItem(2, Icons.favorite_rounded, Icons.favorite_outline_rounded, 'Nhật ký', currentIndex, isDark),
                 _buildNavItem(3, Icons.photo_album_rounded, Icons.photo_album_outlined, 'Kỷ niệm', currentIndex, isDark),
-                _buildNavItem(4, Icons.person_rounded, Icons.person_outline_rounded, 'Cá nhân', currentIndex, isDark),
+                _buildNavItem(4, Icons.checklist_rounded, Icons.checklist_outlined, 'Bucket', currentIndex, isDark),
+                _buildNavItem(5, Icons.person_rounded, Icons.person_outline_rounded, 'Cá nhân', currentIndex, isDark),
               ],
             ),
           ),

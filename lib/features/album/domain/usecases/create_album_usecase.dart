@@ -6,7 +6,7 @@ class CreateAlbumUseCase {
 
   const CreateAlbumUseCase(this._repository);
 
-  Future<void> call(AlbumEntity album) {
+  Future<String> call(AlbumEntity album) {
     return _repository.createAlbum(album);
   }
 }

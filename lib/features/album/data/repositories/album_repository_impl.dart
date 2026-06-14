@@ -30,10 +30,10 @@ class AlbumRepositoryImpl implements AlbumRepository {
   }
 
   @override
-  Future<void> createAlbum(AlbumEntity album) async {
+  Future<String> createAlbum(AlbumEntity album) async {
     try {
       final model = AlbumModel.fromEntity(album);
-      await _remoteDataSource.createAlbum(model);
+      return await _remoteDataSource.createAlbum(model);
     } on FirebaseException catch (e) {
       throw ServerFailure(message: e.message ?? 'Lỗi Firebase khi tạo album');
     } catch (e) {
