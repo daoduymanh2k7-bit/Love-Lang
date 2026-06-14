@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:love_lang/core/services/notification_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:love_lang/core/presentation/screens/main_screen.dart';
@@ -16,9 +17,10 @@ void main() async {
   // Khởi tạo Firebase với cấu hình tự động nhận diện nền tảng
   try {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await NotificationService.init();
+  await NotificationService.requestPermission(); } catch (e) {
     debugPrint('Lỗi khởi tạo Firebase: $e');
   }
 

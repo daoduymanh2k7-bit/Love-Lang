@@ -2,6 +2,8 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+
+import '../../../../core/services/notification_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:love_lang/features/chat/presentation/providers/chat_provider.dart';
@@ -25,11 +27,15 @@ class ChatScreen extends ConsumerStatefulWidget {
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends ConsumerState<ChatScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObserver {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   
-  // Audio Recorder
+  // Determines if app is in foreground
+  bool get _isAppInForeground => WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+
+  
+
   late final AudioRecorder _audioRecorder;
   bool _isRecording = false;
 
@@ -39,12 +45,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     _audioRecorder = AudioRecorder();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     _msgController.dispose();
     _scrollController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     _audioRecorder.dispose();
     super.dispose();
   }
@@ -115,12 +123,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     // Listen for chat messages updates (no vibration logic needed)
     // Listen for nudge count changes to trigger device vibration
-    ref.listen(nudgeCountProvider(widget.coupleId), (previous, next) {
+    ref.listen<AsyncValue<int>>(nudgeCountProvider(widget.coupleId), (previous, next) async {
       if (next.hasValue && previous?.hasValue == true) {
         final newCount = next.value!;
         final oldCount = previous!.value!;
         if (newCount > oldCount) {
-          _handleDeviceVibration();
+          if (_isAppInForeground) {
+            await _handleDeviceVibration();
+          } else {
+            await NotificationService.showNudge();
+          }
         }
       }
     });
@@ -171,7 +183,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     );
                   }
 
-                  // Filter out nudge messages
                   final filtered = messages.where((m) => !m.isNudge).toList();
                   if (filtered.isEmpty) {
                     return const Center(
@@ -205,8 +216,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withValues(alpha: 0.1),
-                    offset: const Offset(0, -2),
-                    blurRadius: 4,
+                     offset: const Offset(0, -2),
+                     blurRadius: 4,
                   )
                 ],
               ),
