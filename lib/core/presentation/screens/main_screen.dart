@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:love_lang/core/presentation/providers/main_tab_provider.dart';
 import 'package:love_lang/features/home/presentation/screens/home_screen.dart';
 import 'package:love_lang/features/chat/presentation/screens/chat_screen.dart';
 import 'package:love_lang/features/diary/presentation/screens/diary_list_screen.dart';
 import 'package:love_lang/features/album/presentation/screens/album_list_screen.dart';
 import 'package:love_lang/features/profile/presentation/screens/profile_screen.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   final String coupleId;
   final String currentUserId;
 
@@ -16,12 +18,10 @@ class MainScreen extends StatefulWidget {
   });
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
-
+class _MainScreenState extends ConsumerState<MainScreen> {
   late final List<Widget> _screens;
 
   @override
@@ -55,49 +55,102 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(mainTabProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       // Sử dụng IndexedStack giúp tránh việc render lại các tab chưa được focus
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Container(
+            height: 65,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, 'Trang chủ', currentIndex, isDark),
+                _buildNavItem(1, Icons.chat_bubble_rounded, Icons.chat_bubble_outline_rounded, 'Nhắn tin', currentIndex, isDark),
+                _buildNavItem(2, Icons.favorite_rounded, Icons.favorite_outline_rounded, 'Nhật ký', currentIndex, isDark),
+                _buildNavItem(3, Icons.photo_album_rounded, Icons.photo_album_outlined, 'Kỷ niệm', currentIndex, isDark),
+                _buildNavItem(4, Icons.person_rounded, Icons.person_outline_rounded, 'Cá nhân', currentIndex, isDark),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(
+    int index,
+    IconData selectedIcon,
+    IconData unselectedIcon,
+    String label,
+    int currentIndex,
+    bool isDark,
+  ) {
+    final isSelected = currentIndex == index;
+    const activeColor = Color(0xFFE8889A);
+    final inactiveColor = isDark ? Colors.white60 : Colors.black45;
+
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          ref.read(mainTabProvider.notifier).state = index;
         },
-        backgroundColor: Colors.pink.shade50,
-        indicatorColor: Colors.pinkAccent.shade100,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined, color: Colors.pinkAccent),
-            selectedIcon: Icon(Icons.home, color: Colors.white),
-            label: 'Trang chủ',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline, color: Colors.pinkAccent),
-            selectedIcon: Icon(Icons.chat_bubble, color: Colors.white),
-            label: 'Nhắn tin',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.favorite_outline, color: Colors.pinkAccent),
-            selectedIcon: Icon(Icons.favorite, color: Colors.white),
-            label: 'Nhật ký',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.photo_album_outlined, color: Colors.pinkAccent),
-            selectedIcon: Icon(Icons.photo_album, color: Colors.white),
-            label: 'Kỷ niệm',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline, color: Colors.pinkAccent),
-            selectedIcon: Icon(Icons.person, color: Colors.white),
-            label: 'Cá nhân',
-          ),
-        ],
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              padding: EdgeInsets.symmetric(
+                horizontal: isSelected ? 16 : 8,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? activeColor.withValues(alpha: 0.15)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                isSelected ? selectedIcon : unselectedIcon,
+                color: isSelected ? activeColor : inactiveColor,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 4),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? activeColor : inactiveColor,
+              ),
+              child: Text(label),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+
