@@ -13,12 +13,12 @@ class BedroomScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: Colors.transparent,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Text('🛏️', style: TextStyle(fontSize: 64)),
             SizedBox(height: 16),
             Text(

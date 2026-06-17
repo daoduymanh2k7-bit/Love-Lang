@@ -77,7 +77,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
   @override
   void dispose() {
     _rotateController.dispose();
-    for (final c in _itemControllers) c.dispose();
+    for (final c in _itemControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -92,7 +94,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
       }
     } else {
       _rotateController.reverse();
-      for (final c in _itemControllers) c.reverse();
+      for (final c in _itemControllers) {
+        c.reverse();
+      }
     }
   }
 
@@ -106,28 +110,24 @@ class _MainScreenState extends ConsumerState<MainScreen>
     if (_menuOpen) {
       setState(() => _menuOpen = false);
       _rotateController.reverse();
-      for (final c in _itemControllers) c.reverse();
+      for (final c in _itemControllers) {
+        c.reverse();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(mainTabProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Map stackIndex → navIndex để highlight đúng
     final navHighlight = currentIndex < 2 ? currentIndex : currentIndex + 1;
 
     return Scaffold(
       body: Stack(
         children: [
-          // Main content
           IndexedStack(
             index: currentIndex,
             children: _screens,
           ),
-
-          // Overlay khi menu mở
           if (_menuOpen)
             Positioned.fill(
               child: GestureDetector(
@@ -135,16 +135,12 @@ class _MainScreenState extends ConsumerState<MainScreen>
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
                   child: Container(
-                    color: Colors.brown.withOpacity(0.35),
+                    color: Colors.brown.withValues(alpha: 0.35),
                   ),
                 ),
               ),
             ),
-
-          // Radial menu items
           if (_menuOpen) _buildRadialMenu(context),
-
-          // Bottom nav
           Positioned(
             left: 12,
             right: 12,
@@ -152,12 +148,13 @@ class _MainScreenState extends ConsumerState<MainScreen>
             child: SafeArea(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.75),
+                  color: Colors.white.withValues(alpha: 0.75),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white.withOpacity(0.9)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.9)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -257,7 +254,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
             AnimatedBuilder(
               animation: _rotateController,
               builder: (context, child) => Transform.rotate(
-                angle: _rotateController.value * 0.785398, // 45 degrees
+                angle: _rotateController.value * 0.785398,
                 child: child,
               ),
               child: Container(
@@ -289,17 +286,16 @@ class _MainScreenState extends ConsumerState<MainScreen>
   }
 
   Widget _buildRadialMenu(BuildContext context) {
-    // Tính vị trí nút Tuỳ chọn (vị trí 2/5 trong nav)
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final navBottom = 12 + MediaQuery.of(context).padding.bottom;
     final centerX = screenWidth / 2;
-    final centerY = screenHeight - navBottom - 44; // 44 = chiều cao nav item
+    final centerY = screenHeight - navBottom - 44;
 
     final offsets = [
-      Offset(centerX - 65, centerY - 52), // Trái ~135°
-      Offset(centerX, centerY - 80), // Hồ sơ thẳng lên
-      Offset(centerX + 65, centerY - 52), // Phải ~45°
+      Offset(centerX - 65, centerY - 52),
+      Offset(centerX, centerY - 80),
+      Offset(centerX + 65, centerY - 52),
     ];
 
     final labels = ['Sắp có', 'Hồ sơ', 'Sắp có'];
@@ -339,20 +335,18 @@ class _MainScreenState extends ConsumerState<MainScreen>
                       decoration: BoxDecoration(
                         color: isReal[i]
                             ? Colors.white
-                            : Colors.white.withOpacity(0.4),
+                            : Colors.white.withValues(alpha: 0.4),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isReal[i]
                               ? const Color(0xFFC1694F)
-                              : Colors.white.withOpacity(0.5),
+                              : Colors.white.withValues(alpha: 0.5),
                           width: isReal[i] ? 2 : 1.5,
-                          style:
-                              isReal[i] ? BorderStyle.solid : BorderStyle.solid,
                         ),
                         boxShadow: isReal[i]
                             ? [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
+                                  color: Colors.black.withValues(alpha: 0.15),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -363,7 +357,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
                         icons[i],
                         color: isReal[i]
                             ? const Color(0xFFC1694F)
-                            : Colors.white.withOpacity(0.6),
+                            : Colors.white.withValues(alpha: 0.6),
                         size: 24,
                       ),
                     ),
@@ -374,7 +368,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
                         fontSize: 11,
                         color: isReal[i]
                             ? Colors.white
-                            : Colors.white.withOpacity(0.6),
+                            : Colors.white.withValues(alpha: 0.6),
                         fontWeight:
                             isReal[i] ? FontWeight.bold : FontWeight.normal,
                       ),
