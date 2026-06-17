@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
-import 'dart:io';
 import '../../domain/entities/album_entity.dart';
 import '../providers/album_provider.dart';
 import '../providers/album_state.dart';

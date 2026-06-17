@@ -7,6 +7,7 @@ class PhotoModel extends PhotoEntity {
     required super.albumId,
     required super.uploadedById,
     required super.url,
+    super.cloudinaryPublicId = '',
     required super.description,
     required super.createdAt,
   });
@@ -21,6 +22,7 @@ class PhotoModel extends PhotoEntity {
       albumId: data?['albumId'] as String? ?? '',
       uploadedById: data?['uploadedById'] as String? ?? '',
       url: data?['url'] as String? ?? '',
+      cloudinaryPublicId: data?['cloudinaryPublicId'] as String? ?? '',
       description: data?['description'] as String? ?? '',
       createdAt: (data?['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -32,6 +34,7 @@ class PhotoModel extends PhotoEntity {
       albumId: entity.albumId,
       uploadedById: entity.uploadedById,
       url: entity.url,
+      cloudinaryPublicId: entity.cloudinaryPublicId,
       description: entity.description,
       createdAt: entity.createdAt,
     );
@@ -42,6 +45,7 @@ class PhotoModel extends PhotoEntity {
       'albumId': albumId,
       'uploadedById': uploadedById,
       'url': url,
+      'cloudinaryPublicId': cloudinaryPublicId,
       'description': description,
       'createdAt': FieldValue.serverTimestamp(),
     };

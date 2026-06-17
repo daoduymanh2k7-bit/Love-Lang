@@ -44,24 +44,19 @@ class AlbumRemoteDataSource {
     return docRef.id;
   }
 
-  Future<void> uploadPhotos(
-    String albumId,
-    String coupleId,
-    String uploaderId,
-    List<String> localFilePaths,
-  ) async {
+  Future<void> uploadPhotos(String albumId, String coupleId, String uploaderId,
+      List<String> localFilePaths) async {
     final batch = _firestore.batch();
     final photosRef = _firestore
         .collection(FirestorePaths.albums)
         .doc(albumId)
         .collection('photos');
 
-    final cloudinary = CloudinaryPublic('dq3bk50q9', 'love_lang_bucket', cache: false);
-
+    final cloudinary =
+        CloudinaryPublic('dq3bk50q9', 'love_lang_bucket', cache: false);
     final uploadTasks = localFilePaths.map((filePath) async {
       final file = File(filePath);
       if (!await file.exists()) return;
-
       try {
         final response = await cloudinary.uploadFile(
           CloudinaryFile.fromFile(
@@ -69,18 +64,16 @@ class AlbumRemoteDataSource {
             resourceType: CloudinaryResourceType.Image,
           ),
         );
-        final secureUrl = response.secureUrl;
-
         final photoId = photosRef.doc().id;
         final photoModel = PhotoModel(
           id: photoId,
           albumId: albumId,
           uploadedById: uploaderId,
-          url: secureUrl,
+          url: response.secureUrl,
+          cloudinaryPublicId: response.publicId,
           description: '',
           createdAt: DateTime.now(),
         );
-
         batch.set(photosRef.doc(photoId), photoModel.toFirestore());
       } catch (e) {
         debugPrint('Cloudinary upload error: $e');
@@ -91,20 +84,13 @@ class AlbumRemoteDataSource {
     await batch.commit();
   }
 
-  // ── Mới thêm ──────────────────────────────────────────────────────────────
-
-  Future<void> updateAlbum(
-    String albumId, {
-    String? title,
-    String? description,
-    String? coverUrl,
-  }) async {
+  Future<void> updateAlbum(String albumId,
+      {String? title, String? description, String? coverUrl}) async {
     final Map<String, dynamic> data = {};
     if (title != null) data['title'] = title;
     if (description != null) data['description'] = description;
     if (coverUrl != null) data['coverUrl'] = coverUrl;
     if (data.isEmpty) return;
-
     await _firestore
         .collection(FirestorePaths.albums)
         .doc(albumId)
@@ -112,15 +98,13 @@ class AlbumRemoteDataSource {
   }
 
   Future<void> deleteAlbum(String albumId) async {
-    // Xóa toàn bộ ảnh trong sub-collection trước
-    final photosSnapshot = await _firestore
+    final photosRef = _firestore
         .collection(FirestorePaths.albums)
         .doc(albumId)
-        .collection('photos')
-        .get();
-
+        .collection('photos');
+    final photoDocs = await photosRef.get();
     final batch = _firestore.batch();
-    for (final doc in photosSnapshot.docs) {
+    for (final doc in photoDocs.docs) {
       batch.delete(doc.reference);
     }
     batch.delete(_firestore.collection(FirestorePaths.albums).doc(albumId));
@@ -139,14 +123,12 @@ class AlbumRemoteDataSource {
   Future<void> deletePhotos(String albumId, List<String> photoIds) async {
     if (photoIds.isEmpty) return;
     final batch = _firestore.batch();
+    final photosRef = _firestore
+        .collection(FirestorePaths.albums)
+        .doc(albumId)
+        .collection('photos');
     for (final photoId in photoIds) {
-      batch.delete(
-        _firestore
-            .collection(FirestorePaths.albums)
-            .doc(albumId)
-            .collection('photos')
-            .doc(photoId),
-      );
+      batch.delete(photosRef.doc(photoId));
     }
     await batch.commit();
   }

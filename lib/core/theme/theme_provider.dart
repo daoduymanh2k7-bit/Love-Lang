@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum ThemePresetColor {
+  terracotta(Color(0xFFC1694F), 'Terracotta'),
   pink(Color(0xFFE8889A), 'Pink'),
   lavender(Color(0xFFB39DDB), 'Lavender'),
   mint(Color(0xFFA5D6A7), 'Mint'),
@@ -14,7 +15,7 @@ enum ThemePresetColor {
 }
 
 class ThemeColorNotifier extends StateNotifier<ThemePresetColor> {
-  ThemeColorNotifier() : super(ThemePresetColor.pink) {
+  ThemeColorNotifier() : super(ThemePresetColor.terracotta) {
     _load();
   }
 
@@ -25,7 +26,7 @@ class ThemeColorNotifier extends StateNotifier<ThemePresetColor> {
       if (name != null) {
         state = ThemePresetColor.values.firstWhere(
           (e) => e.name == name,
-          orElse: () => ThemePresetColor.pink,
+          orElse: () => ThemePresetColor.terracotta,
         );
       }
     } catch (_) {}
@@ -40,7 +41,8 @@ class ThemeColorNotifier extends StateNotifier<ThemePresetColor> {
   }
 }
 
-final themeColorProvider = StateNotifierProvider<ThemeColorNotifier, ThemePresetColor>((ref) {
+final themeColorProvider =
+    StateNotifierProvider<ThemeColorNotifier, ThemePresetColor>((ref) {
   return ThemeColorNotifier();
 });
 
@@ -53,7 +55,9 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final modeIndex = prefs.getInt('theme_mode');
-      if (modeIndex != null && modeIndex >= 0 && modeIndex < ThemeMode.values.length) {
+      if (modeIndex != null &&
+          modeIndex >= 0 &&
+          modeIndex < ThemeMode.values.length) {
         state = ThemeMode.values[modeIndex];
       }
     } catch (_) {}
@@ -68,6 +72,7 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+final themeModeProvider =
+    StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
   return ThemeModeNotifier();
 });
