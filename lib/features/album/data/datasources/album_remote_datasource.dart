@@ -7,9 +7,7 @@ import '../models/album_model.dart';
 import '../models/photo_model.dart';
 
 class AlbumRemoteDataSource {
-
-
-    final FirebaseFirestore _firestore;
+  final FirebaseFirestore _firestore;
 
   AlbumRemoteDataSource(this._firestore);
 
@@ -46,17 +44,20 @@ class AlbumRemoteDataSource {
     return docRef.id;
   }
 
-  Future<void> uploadPhotos(String albumId, String coupleId, String uploaderId,
-      List<String> localFilePaths) async {
+  Future<void> uploadPhotos(
+    String albumId,
+    String coupleId,
+    String uploaderId,
+    List<String> localFilePaths,
+  ) async {
     final batch = _firestore.batch();
     final photosRef = _firestore
         .collection(FirestorePaths.albums)
         .doc(albumId)
         .collection('photos');
 
-    // Create a Cloudinary instance (unsigned preset)
     final cloudinary = CloudinaryPublic('dq3bk50q9', 'love_lang_bucket', cache: false);
-    // Upload each file to Cloudinary and collect the secure URL
+
     final uploadTasks = localFilePaths.map((filePath) async {
       final file = File(filePath);
       if (!await file.exists()) return;
@@ -70,13 +71,12 @@ class AlbumRemoteDataSource {
         );
         final secureUrl = response.secureUrl;
 
-        // Prepare Firestore data for the photo
         final photoId = photosRef.doc().id;
         final photoModel = PhotoModel(
           id: photoId,
           albumId: albumId,
           uploadedById: uploaderId,
-          url: secureUrl, // Store Cloudinary secure URL
+          url: secureUrl,
           description: '',
           createdAt: DateTime.now(),
         );
@@ -84,14 +84,70 @@ class AlbumRemoteDataSource {
         batch.set(photosRef.doc(photoId), photoModel.toFirestore());
       } catch (e) {
         debugPrint('Cloudinary upload error: $e');
-        // Optionally you could rethrow or handle differently
       }
     }).toList();
 
-    // Chờ tất cả file upload xong
     await Future.wait(uploadTasks);
+    await batch.commit();
+  }
 
-    // Lưu batch vào Firestore
+  // ── Mới thêm ──────────────────────────────────────────────────────────────
+
+  Future<void> updateAlbum(
+    String albumId, {
+    String? title,
+    String? description,
+    String? coverUrl,
+  }) async {
+    final Map<String, dynamic> data = {};
+    if (title != null) data['title'] = title;
+    if (description != null) data['description'] = description;
+    if (coverUrl != null) data['coverUrl'] = coverUrl;
+    if (data.isEmpty) return;
+
+    await _firestore
+        .collection(FirestorePaths.albums)
+        .doc(albumId)
+        .update(data);
+  }
+
+  Future<void> deleteAlbum(String albumId) async {
+    // Xóa toàn bộ ảnh trong sub-collection trước
+    final photosSnapshot = await _firestore
+        .collection(FirestorePaths.albums)
+        .doc(albumId)
+        .collection('photos')
+        .get();
+
+    final batch = _firestore.batch();
+    for (final doc in photosSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(_firestore.collection(FirestorePaths.albums).doc(albumId));
+    await batch.commit();
+  }
+
+  Future<void> deletePhoto(String albumId, String photoId) async {
+    await _firestore
+        .collection(FirestorePaths.albums)
+        .doc(albumId)
+        .collection('photos')
+        .doc(photoId)
+        .delete();
+  }
+
+  Future<void> deletePhotos(String albumId, List<String> photoIds) async {
+    if (photoIds.isEmpty) return;
+    final batch = _firestore.batch();
+    for (final photoId in photoIds) {
+      batch.delete(
+        _firestore
+            .collection(FirestorePaths.albums)
+            .doc(albumId)
+            .collection('photos')
+            .doc(photoId),
+      );
+    }
     await batch.commit();
   }
 }
