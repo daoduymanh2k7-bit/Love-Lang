@@ -188,15 +188,18 @@ class _BucketListScreenState extends ConsumerState<BucketListScreen>
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddSheet,
-        backgroundColor: const Color(0xFFE8889A),
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text(
-          'Thêm mục tiêu',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
+        child: FloatingActionButton.extended(
+          onPressed: _openAddSheet,
+          backgroundColor: const Color(0xFFE8889A),
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: const Text(
+            'Thêm mục tiêu',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          elevation: 4,
         ),
-        elevation: 4,
       ),
     );
   }

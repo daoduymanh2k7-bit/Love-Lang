@@ -209,16 +209,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
           
           // ─── Khung Nhập Liệu ───
           SafeArea(
+            bottom: false,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.fromLTRB(12, 8, 12, 8 + 72 + MediaQuery.of(context).padding.bottom),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withValues(alpha: 0.1),
-                     offset: const Offset(0, -2),
-                     blurRadius: 4,
-                  )
+                    offset: const Offset(0, -2),
+                    blurRadius: 4,
+                  ),
                 ],
               ),
               child: Row(

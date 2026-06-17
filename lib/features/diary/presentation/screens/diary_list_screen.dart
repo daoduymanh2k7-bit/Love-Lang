@@ -112,19 +112,22 @@ class DiaryListScreen extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => DiaryEditorScreen(
-                coupleId: coupleId,
-                currentUserId: currentUserId,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => DiaryEditorScreen(
+                  coupleId: coupleId,
+                  currentUserId: currentUserId,
+                ),
               ),
-            ),
-          );
-        },
-        backgroundColor: Colors.pinkAccent,
-        child: const Icon(Icons.edit),
+            );
+          },
+          backgroundColor: Colors.pinkAccent,
+          child: const Icon(Icons.edit),
+        ),
       ),
     );
   }

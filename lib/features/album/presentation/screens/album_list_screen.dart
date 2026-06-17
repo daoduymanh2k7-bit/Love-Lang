@@ -462,11 +462,14 @@ class AlbumListScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Lỗi: $err')),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateAlbumDialog(context, ref),
-        backgroundColor: accentColor,
-        icon: const Icon(Icons.add_photo_alternate),
-        label: const Text('Tạo Album'),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showCreateAlbumDialog(context, ref),
+          backgroundColor: accentColor,
+          icon: const Icon(Icons.add_photo_alternate),
+          label: const Text('Tạo Album'),
+        ),
       ),
     );
   }

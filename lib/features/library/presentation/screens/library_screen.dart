@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:love_lang/features/album/presentation/screens/album_list_screen.dart';
 import 'package:love_lang/features/diary/presentation/screens/diary_list_screen.dart';
 import 'package:love_lang/features/bucket_list/presentation/screens/bucket_list_screen.dart';
+import 'package:love_lang/features/home/presentation/screens/milestone_screen.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final String coupleId;
@@ -25,7 +26,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -62,6 +63,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             Tab(icon: Icon(Icons.photo_album_outlined), text: 'Album'),
             Tab(icon: Icon(Icons.favorite_outline), text: 'Nhật ký'),
             Tab(icon: Icon(Icons.checklist_outlined), text: 'Bucket'),
+            Tab(icon: Icon(Icons.flag_outlined), text: 'Cột mốc'),
           ],
         ),
       ),
@@ -77,6 +79,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             currentUserId: widget.currentUserId,
           ),
           BucketListScreen(
+            coupleId: widget.coupleId,
+            currentUserId: widget.currentUserId,
+          ),
+          MilestoneScreen(
             coupleId: widget.coupleId,
             currentUserId: widget.currentUserId,
           ),
