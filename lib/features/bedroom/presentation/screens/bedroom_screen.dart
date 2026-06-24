@@ -13,23 +13,13 @@ class BedroomScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('🛏️', style: TextStyle(fontSize: 64)),
-            SizedBox(height: 16),
-            Text(
-              'Phòng ngủ',
-              style: TextStyle(fontSize: 20, color: Color(0xFF7A4A3A)),
-            ),
-            Text(
-              'Sắp ra mắt...',
-              style: TextStyle(color: Color(0xFFA07060)),
-            ),
-          ],
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/library_bg.png'),
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );
