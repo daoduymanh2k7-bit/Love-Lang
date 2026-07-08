@@ -5,43 +5,6 @@ import 'package:love_lang/core/presentation/providers/main_tab_provider.dart';
 
 import 'package:love_lang/features/chat/presentation/providers/chat_provider.dart';
 import 'package:love_lang/features/album/presentation/providers/album_provider.dart';
-import 'package:love_lang/features/home/domain/entities/milestone_entity.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:love_lang/core/constants/firestore_paths.dart';
-
-final homeUserDocProvider = StreamProvider.autoDispose
-    .family<Map<String, dynamic>?, String>((ref, uid) {
-  return FirebaseFirestore.instance
-      .doc(FirestorePaths.userDoc(uid))
-      .snapshots()
-      .map((doc) => doc.data());
-});
-
-final milestonesStreamProvider = StreamProvider.autoDispose
-    .family<List<MilestoneEntity>, String>((ref, coupleId) {
-  return FirebaseFirestore.instance
-      .collection(FirestorePaths.milestones(coupleId))
-      .orderBy('date', descending: false)
-      .snapshots()
-      .map((snapshot) {
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      final dateVal = data['date'];
-      DateTime dt = DateTime.now();
-      if (dateVal is Timestamp) {
-        dt = dateVal.toDate();
-      } else if (dateVal is String) {
-        dt = DateTime.tryParse(dateVal) ?? DateTime.now();
-      }
-      return MilestoneEntity(
-        id: doc.id,
-        title: data['title'] as String? ?? 'Cột mốc',
-        date: dt,
-        isDefault: data['isDefault'] as bool? ?? false,
-      );
-    }).toList();
-  });
-});
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String coupleId;
@@ -62,7 +25,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late final AnimationController _heartAnimController;
   final List<_FloatingHeart> _floatingHearts = [];
   late final PageController _albumPageController;
-  late final PageController _milestonePageController;
   int _currentAlbumPage = 0;
 
   @override
@@ -73,14 +35,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       duration: const Duration(milliseconds: 1000),
     );
     _albumPageController = PageController(viewportFraction: 0.85);
-    _milestonePageController = PageController(viewportFraction: 0.92);
   }
 
   @override
   void dispose() {
     _heartAnimController.dispose();
     _albumPageController.dispose();
-    _milestonePageController.dispose();
     super.dispose();
   }
 

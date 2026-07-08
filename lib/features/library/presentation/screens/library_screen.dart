@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:love_lang/features/album/presentation/screens/album_list_screen.dart';
 import 'package:love_lang/features/diary/presentation/screens/diary_list_screen.dart';
 import 'package:love_lang/features/bucket_list/presentation/screens/bucket_list_screen.dart';
-import 'package:love_lang/features/home/presentation/screens/milestone_screen.dart';
+import 'package:love_lang/features/milestone/presentation/screens/milestone_screen.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final String coupleId;
@@ -38,9 +38,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     super.dispose();
   }
 
-  void _openDiaryDialog(BuildContext context) {
+  void _openMilestoneDialog(BuildContext context) {
     // ignore: avoid_print
-    print('>>> Đã chạm vào vùng đồng hồ, đang mở dialog Nhật ký...');
+    print('>>> Đã chạm vào vùng đồng hồ, đang mở dialog Cột mốc...');
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Đã chạm vào đồng hồ ✅'),
@@ -62,7 +62,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               color: const Color(0xFFFFF7EC),
               child: Stack(
                 children: [
-                  DiaryListScreen(
+                  MilestoneScreen(
                     coupleId: widget.coupleId,
                     currentUserId: widget.currentUserId,
                   ),
@@ -178,15 +178,25 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
           builder: (context, constraints) {
             final w = constraints.maxWidth;
             final h = constraints.maxHeight;
-            return Positioned(
-              left: 0,
-              top: h * 0.65,
-              width: w * 0.46,
-              height: h * 0.28,
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () => _openDiaryDialog(context),
-              ),
+            // Cần bọc thêm 1 Stack ở đây thì Positioned bên dưới mới có
+            // đúng "nhà" (Stack làm cha trực tiếp) để top/left/width/height
+            // được áp dụng. Nếu thiếu Stack này, Positioned sẽ bị bỏ qua
+            // toàn bộ ràng buộc và GestureDetector sẽ phình to chiếm hết
+            // phần không gian mà LayoutBuilder được cấp (tức gần như
+            // toàn màn hình) → bấm chỗ nào cũng trúng.
+            return Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  top: h * 0.71,
+                  width: w * 0.39,
+                  height: h * 0.21,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () => _openMilestoneDialog(context),
+                  ),
+                ),
+              ],
             );
           },
         ),
