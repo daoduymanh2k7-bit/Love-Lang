@@ -11,7 +11,8 @@ import 'diary_state.dart';
 import '../../../../core/error/failures.dart';
 
 // Providers for dependencies
-final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
+final firestoreProvider =
+    Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
 
 final diaryRemoteDataSourceProvider = Provider<DiaryRemoteDataSource>((ref) {
   return DiaryRemoteDataSource(ref.watch(firestoreProvider));
@@ -21,24 +22,29 @@ final diaryRepositoryProvider = Provider<DiaryRepositoryImpl>((ref) {
   return DiaryRepositoryImpl(ref.watch(diaryRemoteDataSourceProvider));
 });
 
-final watchDiaryEntriesUseCaseProvider = Provider<WatchDiaryEntriesUseCase>((ref) {
+final watchDiaryEntriesUseCaseProvider =
+    Provider<WatchDiaryEntriesUseCase>((ref) {
   return WatchDiaryEntriesUseCase(ref.watch(diaryRepositoryProvider));
 });
 
-final createDiaryEntryUseCaseProvider = Provider<CreateDiaryEntryUseCase>((ref) {
+final createDiaryEntryUseCaseProvider =
+    Provider<CreateDiaryEntryUseCase>((ref) {
   return CreateDiaryEntryUseCase(ref.watch(diaryRepositoryProvider));
 });
 
-final updateDiaryEntryUseCaseProvider = Provider<UpdateDiaryEntryUseCase>((ref) {
+final updateDiaryEntryUseCaseProvider =
+    Provider<UpdateDiaryEntryUseCase>((ref) {
   return UpdateDiaryEntryUseCase(ref.watch(diaryRepositoryProvider));
 });
 
-final deleteDiaryEntryUseCaseProvider = Provider<DeleteDiaryEntryUseCase>((ref) {
+final deleteDiaryEntryUseCaseProvider =
+    Provider<DeleteDiaryEntryUseCase>((ref) {
   return DeleteDiaryEntryUseCase(ref.watch(diaryRepositoryProvider));
 });
 
 // Stream provider for listening to diary entries
-final diaryEntriesProvider = StreamProvider.family<List<DiaryEntryEntity>, ({String coupleId, String currentUserId})>((ref, args) {
+final diaryEntriesProvider = StreamProvider.family<List<DiaryEntryEntity>,
+    ({String coupleId, String currentUserId})>((ref, args) {
   final watchUseCase = ref.watch(watchDiaryEntriesUseCaseProvider);
   return watchUseCase(args.coupleId, args.currentUserId);
 });
@@ -94,7 +100,8 @@ class DiaryNotifier extends StateNotifier<DiaryState> {
   }
 }
 
-final diaryNotifierProvider = StateNotifierProvider<DiaryNotifier, DiaryState>((ref) {
+final diaryNotifierProvider =
+    StateNotifierProvider<DiaryNotifier, DiaryState>((ref) {
   return DiaryNotifier(
     createUseCase: ref.watch(createDiaryEntryUseCaseProvider),
     updateUseCase: ref.watch(updateDiaryEntryUseCaseProvider),

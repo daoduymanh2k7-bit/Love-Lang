@@ -42,7 +42,8 @@ class _BucketListScreenState extends ConsumerState<BucketListScreen>
     final itemsAsync = ref.watch(bucketItemsProvider(widget.coupleId));
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF12121E) : const Color(0xFFF5F5FA),
+      backgroundColor:
+          isDark ? const Color(0xFF12121E) : Colors.transparent,
       body: itemsAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: Color(0xFFE8889A)),
@@ -63,8 +64,7 @@ class _BucketListScreenState extends ConsumerState<BucketListScreen>
                 backgroundColor:
                     isDark ? const Color(0xFF1E1E2C) : Colors.white,
                 flexibleSpace: FlexibleSpaceBar(
-                  background: _buildHeader(
-                      isDark, doneCount, total, context),
+                  background: _buildHeader(isDark, doneCount, total, context),
                   collapseMode: CollapseMode.parallax,
                 ),
                 // Title chỉ hiện khi collapsed
@@ -189,7 +189,8 @@ class _BucketListScreenState extends ConsumerState<BucketListScreen>
         },
       ),
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
+        padding:
+            EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
         child: FloatingActionButton.extended(
           onPressed: _openAddSheet,
           backgroundColor: const Color(0xFFE8889A),
@@ -237,7 +238,7 @@ class _BucketListScreenState extends ConsumerState<BucketListScreen>
                 style: TextStyle(
                   fontSize: 14,
                   // ignore: deprecated_member_use
-color: Colors.white.withValues(alpha: 0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
               const SizedBox(height: 20),
@@ -266,14 +267,14 @@ color: Colors.white.withValues(alpha: 0.85),
                             tween: Tween<double>(begin: 0, end: progress),
                             duration: const Duration(milliseconds: 800),
                             curve: Curves.easeOut,
-                            builder: (_, value, __) =>
-                                LinearProgressIndicator(
+                            builder: (_, value, __) => LinearProgressIndicator(
                               value: value,
                               minHeight: 8,
                               // ignore: deprecated_member_use
-backgroundColor: Colors.white.withValues(alpha: 0.3),
-                              valueColor: const AlwaysStoppedAnimation(
-                                  Colors.white),
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.3),
+                              valueColor:
+                                  const AlwaysStoppedAnimation(Colors.white),
                             ),
                           ),
                         ),
@@ -283,17 +284,15 @@ backgroundColor: Colors.white.withValues(alpha: 0.3),
                   const SizedBox(width: 20),
                   // Phần trăm hoàn thành
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       // ignore: deprecated_member_use
-color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      total == 0
-                          ? '0%'
-                          : '${(progress * 100).toInt()}%',
+                      total == 0 ? '0%' : '${(progress * 100).toInt()}%',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -322,11 +321,11 @@ class _EmptyTodo extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         // ignore: deprecated_member_use
-color: Colors.white.withValues(alpha: 0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           // ignore: deprecated_member_use
-color: const Color(0xFFE8889A).withValues(alpha: 0.3),
+          color: const Color(0xFFE8889A).withValues(alpha: 0.3),
           width: 1.5,
           style: BorderStyle.solid,
         ),

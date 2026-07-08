@@ -9,7 +9,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   StreamSubscription<User?>? _authSubscription;
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSubscription;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
+      _userDocSubscription;
 
   AuthNotifier() : super(const AuthInitial()) {
     _init();
@@ -40,8 +41,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
       } else {
         final data = doc.data();
-        final pairingStatus = data?[FirestorePaths.userPairingStatus] as String? ??
-            FirestorePaths.pairingStatusNone;
+        final pairingStatus =
+            data?[FirestorePaths.userPairingStatus] as String? ??
+                FirestorePaths.pairingStatusNone;
         final coupleId = data?[FirestorePaths.userCoupleId] as String?;
         state = Authenticated(
           user: user,
@@ -57,7 +59,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> signIn(String email, String password) async {
     state = const AuthLoading();
     try {
-      await _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
+      await _auth.signInWithEmailAndPassword(
+          email: email.trim(), password: password);
     } on FirebaseAuthException catch (e) {
       String msg = 'Đăng nhập thất bại.';
       if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
@@ -128,6 +131,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+final authNotifierProvider =
+    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier();
 });

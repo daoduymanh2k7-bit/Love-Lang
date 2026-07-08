@@ -40,8 +40,6 @@ class _CompleteItemDialogState extends ConsumerState<_CompleteItemDialog> {
     if (mounted) Navigator.pop(context);
   }
 
-
-
   Future<void> _completeWithImage() async {
     setState(() => _isLoading = true);
     final picker = ImagePicker();
@@ -56,21 +54,20 @@ class _CompleteItemDialogState extends ConsumerState<_CompleteItemDialog> {
       return;
     }
     try {
-        final cloudinary = CloudinaryPublic('dq3bk50q9', 'love_lang_bucket');
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final publicId = '${widget.item.id}_$timestamp';
-        final response = await cloudinary.uploadFile(
-          CloudinaryFile.fromFile(
-            picked.path,
-            resourceType: CloudinaryResourceType.Image,
-            publicId: publicId,
-          ),
-        );
+      final cloudinary = CloudinaryPublic('dq3bk50q9', 'love_lang_bucket');
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final publicId = '${widget.item.id}_$timestamp';
+      final response = await cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          picked.path,
+          resourceType: CloudinaryResourceType.Image,
+          publicId: publicId,
+        ),
+      );
       final imageUrl = response.secureUrl;
-      await ref
-          .read(bucketListNotifierProvider.notifier)
-          .markDone(widget.item.coupleId, widget.item.id,
-              completionImageUrl: imageUrl);
+      await ref.read(bucketListNotifierProvider.notifier).markDone(
+          widget.item.coupleId, widget.item.id,
+          completionImageUrl: imageUrl);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       // Simple error handling – could show a snackbar
@@ -218,9 +215,9 @@ class _CreateAlbumSheetState extends State<_CreateAlbumSheet> {
             decoration: InputDecoration(
               hintText: 'Tên album...',
               filled: true,
-                fillColor: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : const Color(0xFFF8F8FC),
+              fillColor: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : const Color(0xFFF8F8FC),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,

@@ -58,7 +58,7 @@ class DiaryEntryModel extends DiaryEntryEntity {
       'createdAt': FieldValue.serverTimestamp(),
     };
   }
-  
+
   Map<String, dynamic> toFirestoreUpdate() {
     return {
       'title': title,

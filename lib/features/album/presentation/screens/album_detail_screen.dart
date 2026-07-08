@@ -140,10 +140,9 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
               },
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('Xóa album',
-                  style: TextStyle(color: Colors.red)),
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title:
+                  const Text('Xóa album', style: TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.pop(ctx);
                 _showDeleteAlbumConfirm();
@@ -210,11 +209,9 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                   onPressed: () => Navigator.pop(ctx, false),
                   child: const Text('Hủy')),
               ElevatedButton(
-                style:
-                    ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Xóa',
-                    style: TextStyle(color: Colors.white)),
+                child: const Text('Xóa', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -257,8 +254,7 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
         ref.invalidate(photosProvider(widget.album.id));
       } else if (next is AlbumError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(next.message), backgroundColor: Colors.red),
+          SnackBar(content: Text(next.message), backgroundColor: Colors.red),
         );
       }
     });
@@ -293,8 +289,8 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              iconTheme: IconThemeData(
-                  color: isDark ? Colors.white : accentColor),
+              iconTheme:
+                  IconThemeData(color: isDark ? Colors.white : accentColor),
               centerTitle: true,
               actions: [
                 IconButton(
@@ -327,8 +323,8 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                     onPressed: _pickAndUploadImages,
                     icon: const Icon(Icons.add_photo_alternate),
                     label: const Text('Thêm ảnh'),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: accentColor),
                   ),
                 ],
               ),
@@ -370,8 +366,7 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: accentColor),
                             )
-                          : const Icon(Icons.add,
-                              color: accentColor, size: 32),
+                          : const Icon(Icons.add, color: accentColor, size: 32),
                     ),
                   ),
                 );
@@ -401,8 +396,8 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                         child: CachedNetworkImage(
                           imageUrl: photo.url,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(
-                              color: Colors.grey[200]),
+                          placeholder: (_, __) =>
+                              Container(color: Colors.grey[200]),
                           errorWidget: (_, __, ___) => Container(
                             color: Colors.grey[200],
                             child: const Icon(Icons.broken_image,
@@ -430,12 +425,9 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
                           height: 22,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color:
-                                isSelected ? accentColor : Colors.white70,
+                            color: isSelected ? accentColor : Colors.white70,
                             border: Border.all(
-                                color: isSelected
-                                    ? accentColor
-                                    : Colors.grey,
+                                color: isSelected ? accentColor : Colors.grey,
                                 width: 1.5),
                           ),
                           child: isSelected
@@ -450,10 +442,8 @@ class _AlbumDetailScreenState extends ConsumerState<AlbumDetailScreen> {
             },
           );
         },
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
-        error: (err, stack) =>
-            Center(child: Text('Lỗi: $err')),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Lỗi: $err')),
       ),
     );
   }
@@ -506,8 +496,8 @@ class _FullscreenViewerState extends State<_FullscreenViewer> {
         // Hiển thị "3/12"
         title: Text(
           '${_currentIndex + 1}/$total',
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
@@ -544,10 +534,8 @@ class _FullscreenViewerState extends State<_FullscreenViewer> {
                     placeholder: (_, __) => const Center(
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
-                    errorWidget: (_, __, ___) => const Icon(
-                        Icons.broken_image,
-                        color: Colors.white,
-                        size: 64),
+                    errorWidget: (_, __, ___) => const Icon(Icons.broken_image,
+                        color: Colors.white, size: 64),
                   ),
                 ),
               ),

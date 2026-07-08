@@ -18,7 +18,8 @@ import 'package:love_lang/features/pairing/domain/entities/couple_entity.dart';
 // ─── Dependency Injection (Providers) ───────────────────────────────────────
 
 /// Cung cấp instance của DataSource.
-final pairingRemoteDatasourceProvider = Provider<PairingRemoteDatasource>((ref) {
+final pairingRemoteDatasourceProvider =
+    Provider<PairingRemoteDatasource>((ref) {
   return PairingRemoteDatasourceImpl(
     firestore: FirebaseFirestore.instance,
     auth: FirebaseAuth.instance,
@@ -33,12 +34,14 @@ final pairingRepositoryProvider = Provider<PairingRepository>((ref) {
 });
 
 /// Cung cấp instance của UseCase kết nối.
-final joinWithInviteCodeUsecaseProvider = Provider<JoinWithInviteCodeUsecase>((ref) {
+final joinWithInviteCodeUsecaseProvider =
+    Provider<JoinWithInviteCodeUsecase>((ref) {
   return JoinWithInviteCodeUsecase(ref.read(pairingRepositoryProvider));
 });
 
 /// Cung cấp instance của UseCase tạo mã.
-final createInviteCodeUseCaseProvider = Provider<CreateInviteCodeUseCase>((ref) {
+final createInviteCodeUseCaseProvider =
+    Provider<CreateInviteCodeUseCase>((ref) {
   return CreateInviteCodeUseCase(ref.read(pairingRepositoryProvider));
 });
 
@@ -60,13 +63,12 @@ class PairingNotifier extends AutoDisposeNotifier<PairingState> {
       // Đọc UseCase từ ref
       final usecase = ref.read(joinWithInviteCodeUsecaseProvider);
       final params = JoinWithInviteCodeParams(rawCode: code);
-      
+
       // Gọi UseCase thực thi logic (Transaction trên Firestore)
       final couple = await usecase(params);
-      
+
       // Nếu không ném lỗi -> kết nối thành công!
       state = PairingSuccess(couple);
-      
     } on Failure catch (failure) {
       // Các lỗi nghiệp vụ (Domain failures) -> đã có message tiếng Việt
       state = PairingError(failure.message);
@@ -95,12 +97,16 @@ class PairingNotifier extends AutoDisposeNotifier<PairingState> {
 }
 
 /// Provider chính được expose ra cho Presentation layer lắng nghe.
-final pairingNotifierProvider = AutoDisposeNotifierProvider<PairingNotifier, PairingState>(
+final pairingNotifierProvider =
+    AutoDisposeNotifierProvider<PairingNotifier, PairingState>(
   PairingNotifier.new,
 );
 
 /// StreamProvider theo dõi cập nhật couple real-time.
-final watchCoupleProvider = StreamProvider.autoDispose.family<CoupleEntity?, String>((ref, coupleId) {
+final watchCoupleProvider =
+    StreamProvider.autoDispose.family<CoupleEntity?, String>((ref, coupleId) {
   final remoteDatasource = ref.watch(pairingRemoteDatasourceProvider);
-  return remoteDatasource.watchCouple(coupleId).map((model) => model?.toEntity());
+  return remoteDatasource
+      .watchCouple(coupleId)
+      .map((model) => model?.toEntity());
 });

@@ -49,7 +49,8 @@ class AlbumRepositoryImpl implements AlbumRepository {
     List<String> localFilePaths,
   ) async {
     try {
-      await _remoteDataSource.uploadPhotos(albumId, coupleId, uploaderId, localFilePaths);
+      await _remoteDataSource.uploadPhotos(
+          albumId, coupleId, uploaderId, localFilePaths);
     } on FirebaseException catch (e) {
       throw ServerFailure(message: e.message ?? 'Lỗi Firebase khi tải ảnh lên');
     } catch (e) {
@@ -74,7 +75,8 @@ class AlbumRepositoryImpl implements AlbumRepository {
         coverUrl: coverUrl,
       );
     } on FirebaseException catch (e) {
-      throw ServerFailure(message: e.message ?? 'Lỗi Firebase khi cập nhật album');
+      throw ServerFailure(
+          message: e.message ?? 'Lỗi Firebase khi cập nhật album');
     } catch (e) {
       throw const ServerFailure();
     }

@@ -49,7 +49,8 @@ class NetworkFailure extends Failure {
 
 /// Lỗi transaction Firestore.
 class TransactionFailure extends Failure {
-  const TransactionFailure({super.message = 'Giao dịch thất bại. Vui lòng thử lại.'});
+  const TransactionFailure(
+      {super.message = 'Giao dịch thất bại. Vui lòng thử lại.'});
 }
 
 /// Người dùng chưa đăng nhập.

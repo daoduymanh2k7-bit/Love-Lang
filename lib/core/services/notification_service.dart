@@ -3,7 +3,8 @@ import 'dart:io';
 import 'dart:typed_data'; // For Int64List
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
 
   static final AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'nudge_channel', // id
@@ -16,8 +17,10 @@ class NotificationService {
 
   /// Initialize the plugin and create the Android channel.
   static Future<void> init() async {
-    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings();
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings iosSettings =
+        DarwinInitializationSettings();
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
@@ -25,7 +28,8 @@ class NotificationService {
     await _plugin.initialize(initSettings);
     // Create channel on Android.
     await _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
   }
 
@@ -33,7 +37,8 @@ class NotificationService {
   static Future<bool> requestPermission() async {
     if (Platform.isAndroid) {
       return await _plugin
-              .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+              .resolvePlatformSpecificImplementation<
+                  AndroidFlutterLocalNotificationsPlugin>()
               ?.requestNotificationsPermission() ??
           false;
     }
@@ -43,7 +48,8 @@ class NotificationService {
 
   /// Show a nudge notification with vibration.
   static Future<void> showNudge() async {
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       'nudge_channel',
       'Nudge Alerts',
       channelDescription: 'Channel for nudge push notifications',
@@ -52,7 +58,8 @@ class NotificationService {
       vibrationPattern: Int64List.fromList([0, 500, 200, 500]),
       playSound: true,
     );
-    final NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
+    final NotificationDetails platformDetails =
+        NotificationDetails(android: androidDetails);
     await _plugin.show(
       0,
       '💕 Chọc ghẹo!',

@@ -51,7 +51,6 @@ class BucketItemEntity {
       completedAt: completedAt ?? this.completedAt,
       createdAt: createdAt ?? this.createdAt,
       createdBy: createdBy ?? this.createdBy,
-
     );
   }
 

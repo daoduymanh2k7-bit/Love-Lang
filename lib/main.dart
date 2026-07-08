@@ -13,14 +13,15 @@ import 'package:love_lang/core/theme/theme_provider.dart';
 void main() async {
   // Đảm bảo các plugin Flutter đã được khởi tạo
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Khởi tạo Firebase với cấu hình tự động nhận diện nền tảng
   try {
     await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  await NotificationService.init();
-  await NotificationService.requestPermission(); } catch (e) {
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await NotificationService.init();
+    await NotificationService.requestPermission();
+  } catch (e) {
     debugPrint('Lỗi khởi tạo Firebase: $e');
   }
 
@@ -50,7 +51,7 @@ class MainApp extends ConsumerWidget {
           ),
         );
       }
-      
+
       if (authState is Authenticated) {
         if (authState.pairingStatus == 'paired' && authState.coupleId != null) {
           return MainScreen(

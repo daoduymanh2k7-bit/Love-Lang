@@ -1,7 +1,8 @@
 // File được sinh tự động bởi Antigravity.
 // Cấu hình Mock Firebase cho Web để phục vụ mục đích chạy thử và kiểm nghiệm UI.
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {

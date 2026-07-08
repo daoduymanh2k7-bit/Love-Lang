@@ -25,16 +25,16 @@ class BucketListRepositoryImpl implements BucketListRepository {
   Future<void> addItem(BucketItemEntity item) async {
     try {
       final model = BucketItemModel(
-          id: item.id,
-          coupleId: item.coupleId,
-          title: item.title,
-          description: item.description,
-          isDone: item.isDone,
-          completedAt: item.completedAt,
-          createdAt: item.createdAt,
-          createdBy: item.createdBy,
-          linkedAlbumId: item.linkedAlbumId,
-        );
+        id: item.id,
+        coupleId: item.coupleId,
+        title: item.title,
+        description: item.description,
+        isDone: item.isDone,
+        completedAt: item.completedAt,
+        createdAt: item.createdAt,
+        createdBy: item.createdBy,
+        linkedAlbumId: item.linkedAlbumId,
+      );
       await _remoteDataSource.addItem(model);
     } on FirebaseException catch (e) {
       throw ServerFailure(message: e.message ?? 'Lỗi khi thêm mục tiêu');
@@ -47,16 +47,16 @@ class BucketListRepositoryImpl implements BucketListRepository {
   Future<void> updateItem(BucketItemEntity item) async {
     try {
       final model = BucketItemModel(
-          id: item.id,
-          coupleId: item.coupleId,
-          title: item.title,
-          description: item.description,
-          isDone: item.isDone,
-          completedAt: item.completedAt,
-          createdAt: item.createdAt,
-          createdBy: item.createdBy,
-          linkedAlbumId: item.linkedAlbumId,
-        );
+        id: item.id,
+        coupleId: item.coupleId,
+        title: item.title,
+        description: item.description,
+        isDone: item.isDone,
+        completedAt: item.completedAt,
+        createdAt: item.createdAt,
+        createdBy: item.createdBy,
+        linkedAlbumId: item.linkedAlbumId,
+      );
       await _remoteDataSource.updateItem(model);
     } on FirebaseException catch (e) {
       throw ServerFailure(message: e.message ?? 'Lỗi khi cập nhật mục tiêu');

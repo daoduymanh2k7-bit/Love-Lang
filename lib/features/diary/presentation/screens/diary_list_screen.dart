@@ -15,12 +15,16 @@ class DiaryListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final diaryStream = ref.watch(diaryEntriesProvider((coupleId: coupleId, currentUserId: currentUserId)));
+    final diaryStream = ref.watch(diaryEntriesProvider(
+        (coupleId: coupleId, currentUserId: currentUserId)));
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Nhật ký Tình yêu'),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: diaryStream.when(
         data: (entries) {
@@ -44,7 +48,8 @@ class DiaryListScreen extends ConsumerWidget {
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 elevation: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -63,24 +68,29 @@ class DiaryListScreen extends ConsumerWidget {
                               const SizedBox(width: 8),
                               Text(
                                 '${entry.createdAt.day}/${entry.createdAt.month}/${entry.createdAt.year}',
-                                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                                style: TextStyle(
+                                    color: Colors.grey.shade600, fontSize: 14),
                               ),
                             ],
                           ),
                           if (entry.isPrivate)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: Colors.purple.shade50,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.lock, size: 14, color: Colors.purple.shade300),
+                                  Icon(Icons.lock,
+                                      size: 14, color: Colors.purple.shade300),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Chỉ mình tôi',
-                                    style: TextStyle(fontSize: 12, color: Colors.purple.shade400),
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.purple.shade400),
                                   ),
                                 ],
                               ),
@@ -90,7 +100,8 @@ class DiaryListScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Text(
                         entry.title,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -113,7 +124,8 @@ class DiaryListScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
+        padding:
+            EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
         child: FloatingActionButton(
           onPressed: () {
             Navigator.of(context).push(

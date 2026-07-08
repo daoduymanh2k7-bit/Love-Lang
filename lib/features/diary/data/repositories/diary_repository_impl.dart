@@ -11,11 +11,12 @@ class DiaryRepositoryImpl implements DiaryRepository {
   DiaryRepositoryImpl(this._remoteDataSource);
 
   @override
-  Stream<List<DiaryEntryEntity>> watchDiaryEntries(String coupleId, String currentUserId) {
+  Stream<List<DiaryEntryEntity>> watchDiaryEntries(
+      String coupleId, String currentUserId) {
     try {
       return _remoteDataSource.watchDiaryEntries(coupleId, currentUserId);
     } catch (e) {
-      // Bắt lỗi khi tạo stream (thường lỗi luồng sẽ emit qua onError, 
+      // Bắt lỗi khi tạo stream (thường lỗi luồng sẽ emit qua onError,
       // nhưng có thể ném ra lúc query builder)
       throw const ServerFailure();
     }
@@ -39,7 +40,8 @@ class DiaryRepositoryImpl implements DiaryRepository {
       final model = DiaryEntryModel.fromEntity(entry);
       await _remoteDataSource.updateDiaryEntry(model);
     } on FirebaseException catch (e) {
-      throw ServerFailure(message: e.message ?? 'Lỗi Firebase khi cập nhật nhật ký');
+      throw ServerFailure(
+          message: e.message ?? 'Lỗi Firebase khi cập nhật nhật ký');
     } catch (e) {
       throw const ServerFailure();
     }

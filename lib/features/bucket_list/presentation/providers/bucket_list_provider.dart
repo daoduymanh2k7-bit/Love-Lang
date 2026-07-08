@@ -15,7 +15,8 @@ import '../../../../core/error/failures.dart';
 
 // ─── Infrastructure providers ─────────────────────────────────────────────────
 
-final bucketListDataSourceProvider = Provider<BucketListRemoteDataSource>((ref) {
+final bucketListDataSourceProvider =
+    Provider<BucketListRemoteDataSource>((ref) {
   return BucketListRemoteDataSource(FirebaseFirestore.instance);
 });
 
@@ -25,7 +26,8 @@ final bucketListRepositoryProvider = Provider<BucketListRepository>((ref) {
 
 // ─── Use-case providers ───────────────────────────────────────────────────────
 
-final watchBucketItemsUseCaseProvider = Provider<WatchBucketItemsUseCase>((ref) {
+final watchBucketItemsUseCaseProvider =
+    Provider<WatchBucketItemsUseCase>((ref) {
   return WatchBucketItemsUseCase(ref.watch(bucketListRepositoryProvider));
 });
 
@@ -33,15 +35,18 @@ final addBucketItemUseCaseProvider = Provider<AddBucketItemUseCase>((ref) {
   return AddBucketItemUseCase(ref.watch(bucketListRepositoryProvider));
 });
 
-final updateBucketItemUseCaseProvider = Provider<UpdateBucketItemUseCase>((ref) {
+final updateBucketItemUseCaseProvider =
+    Provider<UpdateBucketItemUseCase>((ref) {
   return UpdateBucketItemUseCase(ref.watch(bucketListRepositoryProvider));
 });
 
-final deleteBucketItemUseCaseProvider = Provider<DeleteBucketItemUseCase>((ref) {
+final deleteBucketItemUseCaseProvider =
+    Provider<DeleteBucketItemUseCase>((ref) {
   return DeleteBucketItemUseCase(ref.watch(bucketListRepositoryProvider));
 });
 
-final markBucketItemDoneUseCaseProvider = Provider<MarkBucketItemDoneUseCase>((ref) {
+final markBucketItemDoneUseCaseProvider =
+    Provider<MarkBucketItemDoneUseCase>((ref) {
   return MarkBucketItemDoneUseCase(ref.watch(bucketListRepositoryProvider));
 });
 
@@ -115,7 +120,8 @@ class BucketListNotifier extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncLoading();
     try {
-      await _markDoneUseCase(coupleId, itemId, linkedAlbumId: linkedAlbumId, completionImageUrl: completionImageUrl);
+      await _markDoneUseCase(coupleId, itemId,
+          linkedAlbumId: linkedAlbumId, completionImageUrl: completionImageUrl);
       state = const AsyncData(null);
     } on Failure catch (e) {
       state = AsyncError(e, StackTrace.current);
@@ -123,7 +129,6 @@ class BucketListNotifier extends StateNotifier<AsyncValue<void>> {
       state = AsyncError(e, StackTrace.current);
     }
   }
-
 }
 
 final bucketListNotifierProvider =

@@ -7,7 +7,8 @@ class DiaryRemoteDataSource {
 
   DiaryRemoteDataSource(this._firestore);
 
-  Stream<List<DiaryEntryModel>> watchDiaryEntries(String coupleId, String currentUserId) {
+  Stream<List<DiaryEntryModel>> watchDiaryEntries(
+      String coupleId, String currentUserId) {
     // QUAN TRỌNG: Lọc dữ liệu nhật ký bí mật.
     // Nếu isPrivate == true, hệ thống chỉ đẩy về client nếu authorId == currentUserId.
     // Dùng Filter.or của Firestore để kết hợp 2 điều kiện:

@@ -9,14 +9,16 @@ import 'package:love_lang/core/theme/theme_provider.dart';
 import 'package:love_lang/features/auth/presentation/providers/auth_provider.dart';
 import 'package:love_lang/features/pairing/presentation/providers/pairing_provider.dart';
 
-final currentUserDocProvider = StreamProvider.autoDispose.family<Map<String, dynamic>?, String>((ref, uid) {
+final currentUserDocProvider = StreamProvider.autoDispose
+    .family<Map<String, dynamic>?, String>((ref, uid) {
   return FirebaseFirestore.instance
       .doc(FirestorePaths.userDoc(uid))
       .snapshots()
       .map((doc) => doc.data());
 });
 
-final partnerUserProvider = StreamProvider.autoDispose.family<Map<String, dynamic>?, String>((ref, partnerUid) {
+final partnerUserProvider = StreamProvider.autoDispose
+    .family<Map<String, dynamic>?, String>((ref, partnerUid) {
   return FirebaseFirestore.instance
       .doc(FirestorePaths.userDoc(partnerUid))
       .snapshots()
@@ -83,7 +85,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } else if (createdAtVal is DateTime) {
       date = createdAtVal;
     } else {
-      date = FirebaseAuth.instance.currentUser?.metadata.creationTime ?? DateTime.now();
+      date = FirebaseAuth.instance.currentUser?.metadata.creationTime ??
+          DateTime.now();
     }
     return 'Tháng ${date.month}, năm ${date.year}';
   }
@@ -104,7 +107,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               hintText: 'Nhập tên của bạn...',
               border: OutlineInputBorder(),
             ),
-            validator: (val) => (val == null || val.trim().isEmpty) ? 'Tên không được để trống' : null,
+            validator: (val) => (val == null || val.trim().isEmpty)
+                ? 'Tên không được để trống'
+                : null,
           ),
         ),
         actions: [
@@ -125,14 +130,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                  builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
 
                 try {
-                  await FirebaseFirestore.instance.doc(FirestorePaths.userDoc(widget.currentUserId)).update({
+                  await FirebaseFirestore.instance
+                      .doc(FirestorePaths.userDoc(widget.currentUserId))
+                      .update({
                     'displayName': newName,
                   });
-                  await FirebaseAuth.instance.currentUser?.updateDisplayName(newName);
+                  await FirebaseAuth.instance.currentUser
+                      ?.updateDisplayName(newName);
                 } catch (e) {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(content: Text('Lỗi cập nhật tên: $e')),
@@ -172,7 +181,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   labelText: 'Mật khẩu hiện tại',
                   border: OutlineInputBorder(),
                 ),
-                validator: (val) => (val == null || val.isEmpty) ? 'Vui lòng nhập mật khẩu hiện tại' : null,
+                validator: (val) => (val == null || val.isEmpty)
+                    ? 'Vui lòng nhập mật khẩu hiện tại'
+                    : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -182,7 +193,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   labelText: 'Mật khẩu mới',
                   border: OutlineInputBorder(),
                 ),
-                validator: (val) => (val == null || val.length < 6) ? 'Mật khẩu tối thiểu 6 ký tự' : null,
+                validator: (val) => (val == null || val.length < 6)
+                    ? 'Mật khẩu tối thiểu 6 ký tự'
+                    : null,
               ),
             ],
           ),
@@ -205,19 +218,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                  builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
 
                 try {
                   final user = FirebaseAuth.instance.currentUser;
                   final email = user?.email;
                   if (email != null) {
-                    final credential = EmailAuthProvider.credential(email: email, password: currentPassword);
+                    final credential = EmailAuthProvider.credential(
+                        email: email, password: currentPassword);
                     await user?.reauthenticateWithCredential(credential);
                     await user?.updatePassword(newPassword);
 
                     scaffoldMessenger.showSnackBar(
-                      const SnackBar(content: Text('Đổi mật khẩu thành công! 🔑')),
+                      const SnackBar(
+                          content: Text('Đổi mật khẩu thành công! 🔑')),
                     );
                   }
                 } catch (e) {
@@ -245,8 +261,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         title: const Text('Đăng xuất'),
         content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Đăng xuất')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Hủy')),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Đăng xuất')),
         ],
       ),
     );
@@ -265,11 +285,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           'Bạn có chắc muốn hủy ghép cặp? Hành động này không thể hoàn tác và sẽ đưa cả hai trở lại màn hình kết nối.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Hủy')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Xác nhận hủy', style: TextStyle(color: Colors.white)),
+            child: const Text('Xác nhận hủy',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -302,16 +325,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xóa tài khoản', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        title: const Text('Xóa tài khoản',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
         content: const Text(
           'CẢNH BÁO: Hành động này sẽ xóa toàn bộ dữ liệu của bạn và không thể phục hồi. Bạn có chắc chắn muốn tiếp tục?',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Hủy')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Xóa vĩnh viễn', style: TextStyle(color: Colors.white)),
+            child: const Text('Xóa vĩnh viễn',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -336,7 +363,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           }
 
           // Delete firestore user doc
-          await FirebaseFirestore.instance.doc(FirestorePaths.userDoc(widget.currentUserId)).delete();
+          await FirebaseFirestore.instance
+              .doc(FirestorePaths.userDoc(widget.currentUserId))
+              .delete();
 
           // Delete Auth user
           await user.delete();
@@ -345,7 +374,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         if (e.code == 'requires-recent-login') {
           scaffoldMessenger.showSnackBar(
             const SnackBar(
-              content: Text('Vui lòng đăng xuất và đăng nhập lại trước khi xóa tài khoản để bảo mật.'),
+              content: Text(
+                  'Vui lòng đăng xuất và đăng nhập lại trước khi xóa tài khoản để bảo mật.'),
               duration: Duration(seconds: 4),
             ),
           );
@@ -397,7 +427,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Cá nhân', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Cá nhân',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -407,7 +438,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         error: (err, stack) => Center(child: Text('Lỗi: $err')),
         data: (myDoc) {
           final myName = myDoc?['displayName'] as String? ?? 'Chưa đặt tên';
-          final email = FirebaseAuth.instance.currentUser?.email ?? 'Chưa có email';
+          final email =
+              FirebaseAuth.instance.currentUser?.email ?? 'Chưa có email';
           final joinDate = _formatJoinDate(myDoc?['createdAt']);
 
           return ListView(
@@ -418,7 +450,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Card(
                 color: cardColor,
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -429,7 +462,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           const CircleAvatar(
                             radius: 45,
                             backgroundColor: Color(0xFFE8889A),
-                            child: Icon(Icons.person, size: 55, color: Colors.white),
+                            child: Icon(Icons.person,
+                                size: 55, color: Colors.white),
                           ),
                           Container(
                             padding: const EdgeInsets.all(6),
@@ -437,26 +471,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               color: Color(0xFFE8889A),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                            child: const Icon(Icons.camera_alt,
+                                size: 16, color: Colors.white),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       ListTile(
-                        leading: const Icon(Icons.edit_outlined, color: Color(0xFFE8889A)),
+                        leading: const Icon(Icons.edit_outlined,
+                            color: Color(0xFFE8889A)),
                         title: const Text('Tên hiển thị'),
-                        subtitle: Text(myName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        subtitle: Text(myName,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
                         onTap: () => _editDisplayName(myName),
                       ),
                       const Divider(height: 1),
                       ListTile(
-                        leading: const Icon(Icons.email_outlined, color: Color(0xFFE8889A)),
+                        leading: const Icon(Icons.email_outlined,
+                            color: Color(0xFFE8889A)),
                         title: const Text('Email'),
                         subtitle: Text(email),
                       ),
                       const Divider(height: 1),
                       ListTile(
-                        leading: const Icon(Icons.calendar_today_outlined, color: Color(0xFFE8889A)),
+                        leading: const Icon(Icons.calendar_today_outlined,
+                            color: Color(0xFFE8889A)),
                         title: const Text('Tham gia từ'),
                         subtitle: Text(joinDate),
                       ),
@@ -468,24 +508,42 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // ─── SECTION 2: THÔNG TIN CẶP ĐÔI ───
               _buildSectionHeader('THÔNG TIN CẶP ĐÔI'),
               coupleAsync.when(
-                loading: () => const Card(child: SizedBox(height: 100, child: Center(child: CircularProgressIndicator()))),
-                error: (err, stack) => Card(child: Padding(padding: const EdgeInsets.all(16), child: Text('Lỗi: $err'))),
+                loading: () => const Card(
+                    child: SizedBox(
+                        height: 100,
+                        child: Center(child: CircularProgressIndicator()))),
+                error: (err, stack) => Card(
+                    child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text('Lỗi: $err'))),
                 data: (couple) {
                   if (couple == null) return const SizedBox();
-                  final partnerUid = couple.uid1 == widget.currentUserId ? couple.uid2 : couple.uid1;
-                  final partnerAsync = ref.watch(partnerUserProvider(partnerUid));
-                  final days = DateTime.now().difference(couple.pairedAt).inDays;
+                  final partnerUid = couple.uid1 == widget.currentUserId
+                      ? couple.uid2
+                      : couple.uid1;
+                  final partnerAsync =
+                      ref.watch(partnerUserProvider(partnerUid));
+                  final days =
+                      DateTime.now().difference(couple.pairedAt).inDays;
 
                   return partnerAsync.when(
-                    loading: () => const Card(child: SizedBox(height: 100, child: Center(child: CircularProgressIndicator()))),
-                    error: (err, stack) => Card(child: Padding(padding: const EdgeInsets.all(16), child: Text('Lỗi: $err'))),
+                    loading: () => const Card(
+                        child: SizedBox(
+                            height: 100,
+                            child: Center(child: CircularProgressIndicator()))),
+                    error: (err, stack) => Card(
+                        child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text('Lỗi: $err'))),
                     data: (partnerDoc) {
-                      final partnerName = partnerDoc?['displayName'] as String? ?? 'Người ấy';
+                      final partnerName =
+                          partnerDoc?['displayName'] as String? ?? 'Người ấy';
 
                       return Card(
                         color: cardColor,
                         elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -495,21 +553,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   const CircleAvatar(
                                     radius: 28,
                                     backgroundColor: Color(0xFFE8889A),
-                                    child: Icon(Icons.favorite, color: Colors.white, size: 28),
+                                    child: Icon(Icons.favorite,
+                                        color: Colors.white, size: 28),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           partnerName,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           'Yêu nhau được $days ngày 💕',
-                                          style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                          style: const TextStyle(
+                                              color: Colors.grey, fontSize: 14),
                                         ),
                                       ],
                                     ),
@@ -521,15 +584,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               const SizedBox(height: 8),
                               OutlinedButton.icon(
                                 style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Colors.redAccent),
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  side:
+                                      const BorderSide(color: Colors.redAccent),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 12, horizontal: 24),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
                                 ),
                                 onPressed: _unpairCouple,
-                                icon: const Icon(Icons.link_off, color: Colors.redAccent),
+                                icon: const Icon(Icons.link_off,
+                                    color: Colors.redAccent),
                                 label: const Text(
                                   'Hủy ghép cặp',
-                                  style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],
@@ -546,31 +615,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Card(
                 color: cardColor,
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: _isLoadingPrefs
-                    ? const SizedBox(height: 120, child: Center(child: CircularProgressIndicator()))
+                    ? const SizedBox(
+                        height: 120,
+                        child: Center(child: CircularProgressIndicator()))
                     : Column(
                         children: [
                           SwitchListTile(
                             activeThumbColor: accentColor,
                             title: const Text('Thông báo chọc ghẹo'),
-                            subtitle: const Text('Nhận cảnh báo khi đối phương chọc'),
+                            subtitle:
+                                const Text('Nhận cảnh báo khi đối phương chọc'),
                             value: _nudgeEnabled,
-                            onChanged: (val) => _updatePreference('pref_nudge_notifications', val),
+                            onChanged: (val) => _updatePreference(
+                                'pref_nudge_notifications', val),
                           ),
                           const Divider(height: 1),
                           SwitchListTile(
                             activeThumbColor: accentColor,
                             title: const Text('Rung khi nhận tin nhắn'),
                             value: _vibrateEnabled,
-                            onChanged: (val) => _updatePreference('pref_vibrate_on_message', val),
+                            onChanged: (val) => _updatePreference(
+                                'pref_vibrate_on_message', val),
                           ),
                           const Divider(height: 1),
                           SwitchListTile(
                             activeThumbColor: accentColor,
                             title: const Text('Âm thanh thông báo'),
                             value: _soundEnabled,
-                            onChanged: (val) => _updatePreference('pref_notification_sound', val),
+                            onChanged: (val) => _updatePreference(
+                                'pref_notification_sound', val),
                           ),
                         ],
                       ),
@@ -581,7 +657,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Card(
                 color: cardColor,
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -589,7 +666,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     children: [
                       const Text(
                         'Màu chủ đề',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -597,7 +675,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         children: ThemePresetColor.values.map((preset) {
                           final isSelected = themeColor == preset;
                           return GestureDetector(
-                            onTap: () => ref.read(themeColorProvider.notifier).selectColor(preset),
+                            onTap: () => ref
+                                .read(themeColorProvider.notifier)
+                                .selectColor(preset),
                             child: Container(
                               width: 45,
                               height: 45,
@@ -645,18 +725,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Card(
                 color: cardColor,
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Column(
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.lock_outline, color: Color(0xFFE8889A)),
+                      leading: const Icon(Icons.lock_outline,
+                          color: Color(0xFFE8889A)),
                       title: const Text('Đổi mật khẩu'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: _changePassword,
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      leading: const Icon(Icons.logout, color: Colors.redAccent),
+                      leading:
+                          const Icon(Icons.logout, color: Colors.redAccent),
                       title: const Text('Đăng xuất'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: _signOut,
@@ -670,17 +753,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Card(
                 color: cardColor,
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Column(
                   children: [
                     const ListTile(
-                      leading: Icon(Icons.info_outline, color: Color(0xFFE8889A)),
+                      leading:
+                          Icon(Icons.info_outline, color: Color(0xFFE8889A)),
                       title: Text('Phiên bản'),
-                      trailing: Text('1.0.0', style: TextStyle(color: Colors.grey)),
+                      trailing:
+                          Text('1.0.0', style: TextStyle(color: Colors.grey)),
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      leading: const Icon(Icons.description_outlined, color: Color(0xFFE8889A)),
+                      leading: const Icon(Icons.description_outlined,
+                          color: Color(0xFFE8889A)),
                       title: const Text('Điều khoản sử dụng'),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -690,7 +777,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      leading: const Icon(Icons.privacy_tip_outlined, color: Color(0xFFE8889A)),
+                      leading: const Icon(Icons.privacy_tip_outlined,
+                          color: Color(0xFFE8889A)),
                       title: const Text('Chính sách bảo mật'),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -700,8 +788,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      leading: const Icon(Icons.delete_forever, color: Colors.red),
-                      title: const Text('Xóa tài khoản', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                      leading:
+                          const Icon(Icons.delete_forever, color: Colors.red),
+                      title: const Text('Xóa tài khoản',
+                          style: TextStyle(
+                              color: Colors.red, fontWeight: FontWeight.bold)),
                       onTap: _deleteAccount,
                     ),
                   ],

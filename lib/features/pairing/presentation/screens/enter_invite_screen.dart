@@ -176,22 +176,23 @@ class _EnterInviteScreenState extends ConsumerState<EnterInviteScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: isLoading && pairingState is! PairingInviteCreated
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'Kết Nối',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                        child:
+                            isLoading && pairingState is! PairingInviteCreated
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Kết Nối',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                       ),
                     ],
                   ),
@@ -249,13 +250,16 @@ class _EnterInviteScreenState extends ConsumerState<EnterInviteScreen> {
                               ),
                               const SizedBox(width: 16),
                               IconButton(
-                                icon: const Icon(Icons.copy_rounded, color: Colors.pinkAccent),
+                                icon: const Icon(Icons.copy_rounded,
+                                    color: Colors.pinkAccent),
                                 tooltip: 'Sao chép mã',
                                 onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: _generatedCode!));
+                                  Clipboard.setData(
+                                      ClipboardData(text: _generatedCode!));
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('📋 Đã sao chép mã kết nối!'),
+                                      content:
+                                          Text('📋 Đã sao chép mã kết nối!'),
                                       behavior: SnackBarBehavior.floating,
                                     ),
                                   );
@@ -284,22 +288,23 @@ class _EnterInviteScreenState extends ConsumerState<EnterInviteScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: isLoading && pairingState is PairingInviteCreated
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.pinkAccent,
-                                  ),
-                                )
-                              : const Text(
-                                  'Tạo Mã Mới',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                          child:
+                              isLoading && pairingState is PairingInviteCreated
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.pinkAccent,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Tạo Mã Mới',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                         ),
                     ],
                   ),

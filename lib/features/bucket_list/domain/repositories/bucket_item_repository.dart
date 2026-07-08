@@ -25,7 +25,9 @@ class BucketItemRepository {
     await _remoteDataSource.deleteItem(coupleId, itemId);
   }
 
-  Future<void> markDone(String coupleId, String itemId, {String? linkedAlbumId}) async {
-    await _remoteDataSource.markDone(coupleId, itemId, linkedAlbumId: linkedAlbumId);
+  Future<void> markDone(String coupleId, String itemId,
+      {String? linkedAlbumId}) async {
+    await _remoteDataSource.markDone(coupleId, itemId,
+        linkedAlbumId: linkedAlbumId);
   }
 }

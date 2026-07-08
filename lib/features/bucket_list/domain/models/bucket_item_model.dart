@@ -17,7 +17,8 @@ class BucketItemModel extends BucketItemEntity {
     super.completionImageUrl,
   });
 
-  factory BucketItemModel.fromFirestore(DocumentSnapshot doc, String? idOverride) {
+  factory BucketItemModel.fromFirestore(
+      DocumentSnapshot doc, String? idOverride) {
     final data = doc.data() as Map<String, dynamic>;
     return BucketItemModel(
       id: idOverride ?? doc.id,
@@ -38,19 +39,23 @@ class BucketItemModel extends BucketItemEntity {
         'title': title,
         'description': description,
         'isDone': isDone,
-        if (completedAt != null) 'completedAt': Timestamp.fromDate(completedAt!),
+        if (completedAt != null)
+          'completedAt': Timestamp.fromDate(completedAt!),
         'createdAt': Timestamp.fromDate(createdAt),
         'createdBy': createdBy,
         if (linkedAlbumId != null) 'linkedAlbumId': linkedAlbumId,
-        if (completionImageUrl != null) 'completionImageUrl': completionImageUrl,
+        if (completionImageUrl != null)
+          'completionImageUrl': completionImageUrl,
       };
 
   Map<String, dynamic> toFirestoreUpdate() => {
         'title': title,
         'description': description,
         'isDone': isDone,
-        if (completedAt != null) 'completedAt': Timestamp.fromDate(completedAt!),
+        if (completedAt != null)
+          'completedAt': Timestamp.fromDate(completedAt!),
         if (linkedAlbumId != null) 'linkedAlbumId': linkedAlbumId,
-        if (completionImageUrl != null) 'completionImageUrl': completionImageUrl,
+        if (completionImageUrl != null)
+          'completionImageUrl': completionImageUrl,
       };
 }

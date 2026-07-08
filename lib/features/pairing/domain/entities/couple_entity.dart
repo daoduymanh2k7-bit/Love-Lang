@@ -4,8 +4,8 @@
 
 /// Trạng thái của một cặp đôi.
 enum CoupleStatus {
-  active,    // Đang kết nối
-  unpaired,  // Đã hủy kết nối
+  active, // Đang kết nối
+  unpaired, // Đã hủy kết nối
 }
 
 /// Entity đại diện cho một cặp đôi trong hệ thống.

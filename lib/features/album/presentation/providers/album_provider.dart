@@ -18,7 +18,8 @@ import '../../../../core/error/failures.dart';
 
 // ── Dependency providers ───────────────────────────────────────────────────
 
-final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
+final firestoreProvider =
+    Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
 
 final albumRemoteDataSourceProvider = Provider<AlbumRemoteDataSource>((ref) {
   return AlbumRemoteDataSource(ref.watch(firestoreProvider));
@@ -64,11 +65,13 @@ final deletePhotosUseCaseProvider = Provider<DeletePhotosUseCase>((ref) {
 
 // ── Stream providers ───────────────────────────────────────────────────────
 
-final albumsProvider = StreamProvider.family<List<AlbumEntity>, String>((ref, coupleId) {
+final albumsProvider =
+    StreamProvider.family<List<AlbumEntity>, String>((ref, coupleId) {
   return ref.watch(watchAlbumsUseCaseProvider)(coupleId);
 });
 
-final photosProvider = StreamProvider.family<List<PhotoEntity>, String>((ref, albumId) {
+final photosProvider =
+    StreamProvider.family<List<PhotoEntity>, String>((ref, albumId) {
   return ref.watch(watchPhotosUseCaseProvider)(albumId);
 });
 
@@ -138,7 +141,8 @@ class AlbumNotifier extends StateNotifier<AlbumState> {
   }) async {
     state = const AlbumLoading();
     try {
-      await _updateUseCase(albumId, title: title, description: description, coverUrl: coverUrl);
+      await _updateUseCase(albumId,
+          title: title, description: description, coverUrl: coverUrl);
       state = const AlbumLoaded();
     } on Failure catch (e) {
       state = AlbumError(e.message);
@@ -189,7 +193,8 @@ class AlbumNotifier extends StateNotifier<AlbumState> {
   }
 }
 
-final albumNotifierProvider = StateNotifierProvider<AlbumNotifier, AlbumState>((ref) {
+final albumNotifierProvider =
+    StateNotifierProvider<AlbumNotifier, AlbumState>((ref) {
   return AlbumNotifier(
     createUseCase: ref.watch(createAlbumUseCaseProvider),
     uploadUseCase: ref.watch(uploadPhotosUseCaseProvider),

@@ -34,3 +34,6 @@ flutter:
   assets:
     - assets/images/lobby_illustration.png
     - assets/images/library_bg.png
+    - assets/images/library_character_boy_reading.png
+    - assets/images/library_character_girl_reading.png
+    - assets/images/library_decor_calendar_clock.png

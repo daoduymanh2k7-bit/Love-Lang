@@ -55,29 +55,21 @@ class PairingRepositoryImpl implements PairingRepository {
     // Chuyển từng loại exception sang Failure tương ứng
     on InviteNotFoundException {
       throw const InviteNotFoundFailure();
-    }
-    on InviteExpiredException {
+    } on InviteExpiredException {
       throw const InviteExpiredFailure();
-    }
-    on SelfPairingException {
+    } on SelfPairingException {
       throw const SelfPairingFailure();
-    }
-    on CreatorAlreadyPairedException {
+    } on CreatorAlreadyPairedException {
       throw const CreatorAlreadyPairedFailure();
-    }
-    on AlreadyPairedException {
+    } on AlreadyPairedException {
       throw const AlreadyPairedFailure();
-    }
-    on UnauthenticatedException {
+    } on UnauthenticatedException {
       throw const UnauthenticatedFailure();
-    }
-    on TransactionException catch (e) {
+    } on TransactionException catch (e) {
       throw TransactionFailure(message: e.message);
-    }
-    on NetworkException catch (e) {
+    } on NetworkException catch (e) {
       throw NetworkFailure(message: e.message);
-    }
-    on AppException catch (e) {
+    } on AppException catch (e) {
       // Fallback cho các exception chưa được xử lý cụ thể
       throw ServerFailure(message: e.message);
     }

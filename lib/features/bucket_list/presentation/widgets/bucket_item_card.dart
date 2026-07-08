@@ -61,11 +61,10 @@ class BucketItemCard extends ConsumerWidget {
         return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: const Text('Xóa mục tiêu?'),
-            content:
-                Text('Bạn có chắc muốn xóa "${item.title}" không?'),
+            content: Text('Bạn có chắc muốn xóa "${item.title}" không?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
@@ -92,7 +91,10 @@ class BucketItemCard extends ConsumerWidget {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+          ],
         ),
         child: Material(
           color: Colors.transparent,
@@ -101,8 +103,7 @@ class BucketItemCard extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             onLongPress: item.isDone ? null : () => _openEdit(context),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -136,13 +137,15 @@ class BucketItemCard extends ConsumerWidget {
                               child: SizedBox(
                                 width: 14,
                                 height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               ),
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
                             color: Colors.grey[200],
-                            child: const Icon(Icons.broken_image, size: 16, color: Colors.grey),
+                            child: const Icon(Icons.broken_image,
+                                size: 16, color: Colors.grey),
                           ),
                         ),
                       ),
@@ -180,14 +183,12 @@ class BucketItemCard extends ConsumerWidget {
                           children: [
                             if (item.isDone && item.completedAt != null) ...[
                               Icon(Icons.check_circle_rounded,
-                                  size: 12,
-                                  color: Colors.green.shade400),
+                                  size: 12, color: Colors.green.shade400),
                               const SizedBox(width: 4),
                               Text(
                                 'Hoàn thành ${_formatDate(item.completedAt)}',
                                 style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.green.shade400),
+                                    fontSize: 11, color: Colors.green.shade400),
                               ),
                             ] else ...[
                               Icon(Icons.calendar_today_rounded,
@@ -195,15 +196,13 @@ class BucketItemCard extends ConsumerWidget {
                               const SizedBox(width: 4),
                               Text(
                                 _formatDate(item.createdAt),
-                                style:
-                                    TextStyle(fontSize: 11, color: subColor),
+                                style: TextStyle(fontSize: 11, color: subColor),
                               ),
                             ],
                             if (item.linkedAlbumId != null) ...[
                               const SizedBox(width: 8),
                               const Icon(Icons.photo_album_rounded,
-                                  size: 12,
-                                  color: Color(0xFFE8889A)),
+                                  size: 12, color: Color(0xFFE8889A)),
                               const SizedBox(width: 3),
                               const Text(
                                 'Có kỷ niệm',
@@ -222,13 +221,13 @@ class BucketItemCard extends ConsumerWidget {
                   // Nút edit (chỉ hiện khi chưa done)
                   if (!item.isDone)
                     IconButton(
-                      icon: Icon(Icons.edit_outlined,
-                          size: 18, color: subColor),
+                      icon:
+                          Icon(Icons.edit_outlined, size: 18, color: subColor),
                       onPressed: () => _openEdit(context),
                       splashRadius: 20,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                          minWidth: 32, minHeight: 32),
+                      constraints:
+                          const BoxConstraints(minWidth: 32, minHeight: 32),
                     ),
                 ],
               ),
@@ -258,19 +257,14 @@ class _AnimatedCheckbox extends StatelessWidget {
         height: 26,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isDone
-              ? Colors.green.shade400
-              : Colors.transparent,
+          color: isDone ? Colors.green.shade400 : Colors.transparent,
           border: Border.all(
-            color: isDone
-                ? Colors.green.shade400
-                : const Color(0xFFE8889A),
+            color: isDone ? Colors.green.shade400 : const Color(0xFFE8889A),
             width: 2,
           ),
         ),
         child: isDone
-            ? const Icon(Icons.check_rounded,
-                size: 16, color: Colors.white)
+            ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
             : null,
       ),
     );

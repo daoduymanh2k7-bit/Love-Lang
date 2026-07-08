@@ -27,29 +27,29 @@ class DiaryEntryEntity {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is DiaryEntryEntity &&
-      other.id == id &&
-      other.authorId == authorId &&
-      other.coupleId == coupleId &&
-      other.title == title &&
-      other.content == content &&
-      other.mood == mood &&
-      listEquals(other.mediaUrls, mediaUrls) &&
-      other.isPrivate == isPrivate &&
-      other.createdAt == createdAt;
+        other.id == id &&
+        other.authorId == authorId &&
+        other.coupleId == coupleId &&
+        other.title == title &&
+        other.content == content &&
+        other.mood == mood &&
+        listEquals(other.mediaUrls, mediaUrls) &&
+        other.isPrivate == isPrivate &&
+        other.createdAt == createdAt;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      authorId.hashCode ^
-      coupleId.hashCode ^
-      title.hashCode ^
-      content.hashCode ^
-      mood.hashCode ^
-      mediaUrls.hashCode ^
-      isPrivate.hashCode ^
-      createdAt.hashCode;
+        authorId.hashCode ^
+        coupleId.hashCode ^
+        title.hashCode ^
+        content.hashCode ^
+        mood.hashCode ^
+        mediaUrls.hashCode ^
+        isPrivate.hashCode ^
+        createdAt.hashCode;
   }
 }

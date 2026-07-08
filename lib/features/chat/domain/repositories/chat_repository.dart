@@ -10,5 +10,6 @@ abstract interface class ChatRepository {
   Future<void> sendMessage(MessageEntity message);
 
   /// Tải file ghi âm lên Storage và sau đó gửi tin nhắn Voice.
-  Future<void> sendVoiceMessage(String coupleId, String senderId, String filePath);
+  Future<void> sendVoiceMessage(
+      String coupleId, String senderId, String filePath);
 }

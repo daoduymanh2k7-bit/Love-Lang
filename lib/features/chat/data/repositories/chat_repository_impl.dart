@@ -33,7 +33,8 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<void> sendVoiceMessage(String coupleId, String senderId, String filePath) async {
+  Future<void> sendVoiceMessage(
+      String coupleId, String senderId, String filePath) async {
     try {
       await _remoteDatasource.sendVoiceMessage(coupleId, senderId, filePath);
     } on ServerException catch (e) {

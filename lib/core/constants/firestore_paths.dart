@@ -21,7 +21,8 @@ abstract final class FirestorePaths {
   static String diaryEntries(String coupleId) => '$diaries/$coupleId/entries';
   static String photos(String coupleId) => '$albums/$coupleId/photos';
   static String milestones(String coupleId) => '$couples/$coupleId/milestones';
-  static String bucketItems(String coupleId) => '$couples/$coupleId/bucketItems';
+  static String bucketItems(String coupleId) =>
+      '$couples/$coupleId/bucketItems';
 
   // ─── Field Names: Invite Document ─────────────────────────────────────────
   static const String inviteCode = 'code';

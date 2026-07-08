@@ -11,7 +11,8 @@ import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
 abstract interface class ChatRemoteDatasource {
   Stream<List<MessageModel>> watchMessages(String coupleId);
   Future<void> sendMessage(MessageModel message);
-  Future<void> sendVoiceMessage(String coupleId, String senderId, String filePath);
+  Future<void> sendVoiceMessage(
+      String coupleId, String senderId, String filePath);
 }
 
 class ChatRemoteDatasourceImpl implements ChatRemoteDatasource {
@@ -41,7 +42,9 @@ class ChatRemoteDatasourceImpl implements ChatRemoteDatasource {
   @override
   Future<void> sendMessage(MessageModel message) async {
     try {
-      final docRef = _firestore.collection(FirestorePaths.messages(message.coupleId)).doc();
+      final docRef = _firestore
+          .collection(FirestorePaths.messages(message.coupleId))
+          .doc();
       await docRef.set(message.toMapWithServerTimestamp());
     } on FirebaseException catch (e) {
       throw ServerException(message: 'Không thể gửi tin nhắn: ${e.message}');
@@ -49,7 +52,8 @@ class ChatRemoteDatasourceImpl implements ChatRemoteDatasource {
   }
 
   @override
-  Future<void> sendVoiceMessage(String coupleId, String senderId, String filePath) async {
+  Future<void> sendVoiceMessage(
+      String coupleId, String senderId, String filePath) async {
     final file = File(filePath);
     if (!file.existsSync()) {
       throw const ServerException(message: 'File ghi âm không tồn tại.');
@@ -58,8 +62,9 @@ class ChatRemoteDatasourceImpl implements ChatRemoteDatasource {
     try {
       // 1. Upload file lên Firebase Storage
       final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-      final storageRef = _storage.ref().child('couples/$coupleId/chats/voices/$fileName');
-      
+      final storageRef =
+          _storage.ref().child('couples/$coupleId/chats/voices/$fileName');
+
       final uploadTask = await storageRef.putFile(file);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
 
@@ -70,13 +75,14 @@ class ChatRemoteDatasourceImpl implements ChatRemoteDatasource {
         coupleId: coupleId,
         content: downloadUrl, // Gắn Link âm thanh vào content
         type: MessageType.voice,
-        timestamp: DateTime.now(), // Tạm thời để lấy kiểu, sẽ dùng serverTimestamp khi set
+        timestamp: DateTime
+            .now(), // Tạm thời để lấy kiểu, sẽ dùng serverTimestamp khi set
       );
 
       await sendMessage(message);
-
     } on FirebaseException catch (e) {
-      throw ServerException(message: 'Không thể gửi tin nhắn thoại: ${e.message}');
+      throw ServerException(
+          message: 'Không thể gửi tin nhắn thoại: ${e.message}');
     } catch (e) {
       throw ServerException(message: 'Lỗi không xác định: $e');
     }

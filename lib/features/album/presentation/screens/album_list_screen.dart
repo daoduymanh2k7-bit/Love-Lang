@@ -249,7 +249,7 @@ class AlbumListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final albumsStream = ref.watch(albumsProvider(coupleId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? null : const Color(0xFFFBE4D8);
+    final backgroundColor = isDark ? null : Colors.transparent;
     final cardColor = isDark ? null : const Color(0xFFFFF7EC);
     const accentColor = Color(0xFFE8889A);
 
@@ -463,7 +463,8 @@ class AlbumListScreen extends ConsumerWidget {
         error: (err, stack) => Center(child: Text('Lỗi: $err')),
       ),
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
+        padding:
+            EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
         child: FloatingActionButton.extended(
           onPressed: () => _showCreateAlbumDialog(context, ref),
           backgroundColor: accentColor,

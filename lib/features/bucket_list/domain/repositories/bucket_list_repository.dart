@@ -16,5 +16,6 @@ abstract interface class BucketListRepository {
   Future<void> deleteItem(String coupleId, String itemId);
 
   /// Đánh dấu hoàn thành, tùy chọn gắn linkedAlbumId và completionImageUrl.
-  Future<void> markDone(String coupleId, String itemId, {String? linkedAlbumId, String? completionImageUrl});
+  Future<void> markDone(String coupleId, String itemId,
+      {String? linkedAlbumId, String? completionImageUrl});
 }

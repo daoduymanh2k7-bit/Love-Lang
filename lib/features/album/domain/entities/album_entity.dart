@@ -21,23 +21,23 @@ class AlbumEntity {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is AlbumEntity &&
-      other.id == id &&
-      other.coupleId == coupleId &&
-      other.title == title &&
-      other.coverUrl == coverUrl &&
-      other.description == description &&
-      other.createdAt == createdAt;
+        other.id == id &&
+        other.coupleId == coupleId &&
+        other.title == title &&
+        other.coverUrl == coverUrl &&
+        other.description == description &&
+        other.createdAt == createdAt;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      coupleId.hashCode ^
-      title.hashCode ^
-      coverUrl.hashCode ^
-      description.hashCode ^
-      createdAt.hashCode;
+        coupleId.hashCode ^
+        title.hashCode ^
+        coverUrl.hashCode ^
+        description.hashCode ^
+        createdAt.hashCode;
   }
 }

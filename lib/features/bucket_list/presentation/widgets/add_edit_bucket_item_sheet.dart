@@ -8,6 +8,7 @@ import '../providers/bucket_list_provider.dart';
 class AddEditBucketItemSheet extends ConsumerStatefulWidget {
   final String coupleId;
   final String currentUserId;
+
   /// Nếu null → chế độ thêm mới. Nếu có → chế độ chỉnh sửa.
   final BucketItemEntity? existingItem;
 
@@ -34,8 +35,7 @@ class _AddEditBucketItemSheetState
   @override
   void initState() {
     super.initState();
-    _titleCtrl =
-        TextEditingController(text: widget.existingItem?.title ?? '');
+    _titleCtrl = TextEditingController(text: widget.existingItem?.title ?? '');
     _descCtrl =
         TextEditingController(text: widget.existingItem?.description ?? '');
   }
@@ -136,8 +136,8 @@ class _AddEditBucketItemSheetState
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              prefixIcon: const Icon(Icons.flag_rounded,
-                  color: Color(0xFFE8889A)),
+              prefixIcon:
+                  const Icon(Icons.flag_rounded, color: Color(0xFFE8889A)),
             ),
           ),
           const SizedBox(height: 14),
@@ -158,8 +158,8 @@ class _AddEditBucketItemSheetState
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              prefixIcon: const Icon(Icons.notes_rounded,
-                  color: Color(0xFFE8889A)),
+              prefixIcon:
+                  const Icon(Icons.notes_rounded, color: Color(0xFFE8889A)),
             ),
           ),
           const SizedBox(height: 24),

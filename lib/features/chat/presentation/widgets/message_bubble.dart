@@ -32,10 +32,13 @@ class MessageBubble extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.vibration, color: Colors.pinkAccent, size: 16),
+                  const Icon(Icons.vibration,
+                      color: Colors.pinkAccent, size: 16),
                   const SizedBox(width: 8),
                   Text(
-                    isMe ? 'Bạn đã gửi một cú chọc ghẹo 👆' : 'Nửa kia vừa chọc ghẹo bạn! 👆',
+                    isMe
+                        ? 'Bạn đã gửi một cú chọc ghẹo 👆'
+                        : 'Nửa kia vừa chọc ghẹo bạn! 👆',
                     style: const TextStyle(
                       color: Colors.pinkAccent,
                       fontWeight: FontWeight.w600,
@@ -54,7 +57,8 @@ class MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) _buildAvatar(),
@@ -139,7 +143,7 @@ class _VoicePlayerWidgetState extends State<_VoicePlayerWidget> {
     super.initState();
     // Khởi tạo player
     _audioPlayer.setSourceUrl(widget.audioUrl);
-    
+
     // Lắng nghe thay đổi trạng thái
     _audioPlayer.onPlayerStateChanged.listen((state) {
       if (mounted) {
@@ -183,7 +187,7 @@ class _VoicePlayerWidgetState extends State<_VoicePlayerWidget> {
   @override
   Widget build(BuildContext context) {
     final color = widget.isMe ? Colors.white : Colors.black87;
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -209,8 +213,8 @@ class _VoicePlayerWidgetState extends State<_VoicePlayerWidget> {
               ),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor: _duration.inMilliseconds > 0 
-                    ? _position.inMilliseconds / _duration.inMilliseconds 
+                widthFactor: _duration.inMilliseconds > 0
+                    ? _position.inMilliseconds / _duration.inMilliseconds
                     : 0.0,
                 child: Container(
                   decoration: BoxDecoration(

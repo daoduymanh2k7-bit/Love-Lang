@@ -26,10 +26,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final email = _emailController.text;
     final password = _passwordController.text;
-    
+
     if (_isLogin) {
       ref.read(authNotifierProvider.notifier).signIn(email, password);
     } else {
@@ -131,10 +131,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               children: [
                                 Expanded(
                                   child: GestureDetector(
-                                    onTap: () => setState(() => _isLogin = true),
+                                    onTap: () =>
+                                        setState(() => _isLogin = true),
                                     child: Container(
                                       alignment: Alignment.center,
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
                                       decoration: BoxDecoration(
                                         border: Border(
                                           bottom: BorderSide(
@@ -160,10 +162,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 ),
                                 Expanded(
                                   child: GestureDetector(
-                                    onTap: () => setState(() => _isLogin = false),
+                                    onTap: () =>
+                                        setState(() => _isLogin = false),
                                     child: Container(
                                       alignment: Alignment.center,
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
                                       decoration: BoxDecoration(
                                         border: Border(
                                           bottom: BorderSide(
@@ -257,7 +261,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFFF758C),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),

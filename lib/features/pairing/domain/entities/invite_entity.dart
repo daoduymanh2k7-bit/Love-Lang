@@ -3,9 +3,9 @@
 
 /// Trạng thái của một mã mời.
 enum InviteStatus {
-  pending,  // Đang chờ người kia nhập
+  pending, // Đang chờ người kia nhập
   accepted, // Đã được chấp nhận
-  expired,  // Đã hết hạn
+  expired, // Đã hết hạn
 }
 
 /// Entity đại diện cho một mã mời kết nối cặp đôi.
@@ -62,7 +62,9 @@ class InviteEntity {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is InviteEntity && runtimeType == other.runtimeType && id == other.id;
+      other is InviteEntity &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
 
   @override
   int get hashCode => id.hashCode;

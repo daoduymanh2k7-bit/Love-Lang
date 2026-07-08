@@ -9,14 +9,16 @@ import 'package:love_lang/features/home/domain/entities/milestone_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:love_lang/core/constants/firestore_paths.dart';
 
-final homeUserDocProvider = StreamProvider.autoDispose.family<Map<String, dynamic>?, String>((ref, uid) {
+final homeUserDocProvider = StreamProvider.autoDispose
+    .family<Map<String, dynamic>?, String>((ref, uid) {
   return FirebaseFirestore.instance
       .doc(FirestorePaths.userDoc(uid))
       .snapshots()
       .map((doc) => doc.data());
 });
 
-final milestonesStreamProvider = StreamProvider.autoDispose.family<List<MilestoneEntity>, String>((ref, coupleId) {
+final milestonesStreamProvider = StreamProvider.autoDispose
+    .family<List<MilestoneEntity>, String>((ref, coupleId) {
   return FirebaseFirestore.instance
       .collection(FirestorePaths.milestones(coupleId))
       .orderBy('date', descending: false)
@@ -55,13 +57,13 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with TickerProviderStateMixin {
   late final AnimationController _heartAnimController;
   final List<_FloatingHeart> _floatingHearts = [];
   late final PageController _albumPageController;
   late final PageController _milestonePageController;
   int _currentAlbumPage = 0;
-
 
   @override
   void initState() {
@@ -133,12 +135,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-
-
     final albumsAsync = ref.watch(albumsProvider(widget.coupleId));
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF1E1E2C) : const Color(0xFFFBE4D8);
+    final backgroundColor =
+        isDark ? const Color(0xFF1E1E2C) : const Color(0xFFFBE4D8);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -147,23 +148,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           // Main scrollable content
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // SECTION 2: Memory Carousel
                   _buildMemoryCarouselSection(albumsAsync, isDark),
-                  
 
-                  
                   // SECTION 3: Couple Illustration Card
                   _buildCoupleIllustrationCard(isDark),
-                  
-    
                 ],
               ),
             ),
@@ -219,16 +217,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
-
-
-
-
-
-
-
-
-
-  Widget _buildMemoryCarouselSection(AsyncValue<List<dynamic>> albumsAsync, bool isDark) {
+  Widget _buildMemoryCarouselSection(
+      AsyncValue<List<dynamic>> albumsAsync, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -246,7 +236,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         albumsAsync.when(
           loading: () => const SizedBox(
             height: 180,
-            child: Center(child: CircularProgressIndicator(color: Color(0xFFE8889A))),
+            child: Center(
+                child: CircularProgressIndicator(color: Color(0xFFE8889A))),
           ),
           error: (err, stack) => Container(
             height: 180,
@@ -266,7 +257,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   width: double.infinity,
                   height: 150,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2C2C3E) : const Color(0xFFFFF7EC),
+                    color: isDark
+                        ? const Color(0xFF2C2C3E)
+                        : const Color(0xFFFFF7EC),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: const Color(0xFFE8889A).withValues(alpha: 0.5),
@@ -277,7 +270,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate_outlined, size: 40, color: Color(0xFFE8889A)),
+                      Icon(Icons.add_photo_alternate_outlined,
+                          size: 40, color: Color(0xFFE8889A)),
                       SizedBox(height: 8),
                       Text(
                         'Chưa có album nào. Tạo ngay nào!',
@@ -331,13 +325,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                                       ? CachedNetworkImage(
                                           imageUrl: album.coverUrl,
                                           fit: BoxFit.cover,
-                                          placeholder: (context, url) => Container(
+                                          placeholder: (context, url) =>
+                                              Container(
                                             color: Colors.grey[200],
-                                            child: const Center(child: CircularProgressIndicator()),
+                                            child: const Center(
+                                                child:
+                                                    CircularProgressIndicator()),
                                           ),
-                                          errorWidget: (context, url, error) => Container(
+                                          errorWidget: (context, url, error) =>
+                                              Container(
                                             color: Colors.grey[200],
-                                            child: const Icon(Icons.broken_image, color: Colors.grey),
+                                            child: const Icon(
+                                                Icons.broken_image,
+                                                color: Colors.grey),
                                           ),
                                         )
                                       : Container(
@@ -368,7 +368,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                                   left: 16,
                                   right: 16,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         album.title,
@@ -449,7 +450,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 20.0, top: 20.0, right: 20.0, bottom: 8.0),
+            padding: const EdgeInsets.only(
+                left: 20.0, top: 20.0, right: 20.0, bottom: 8.0),
             child: Row(
               children: [
                 const Icon(Icons.home_rounded, color: Color(0xFFE8889A)),
@@ -514,7 +516,8 @@ class _FloatingHeartWidget extends StatefulWidget {
 
 typedef VoidKeyCallback = void Function();
 
-class _FloatingHeartWidgetState extends State<_FloatingHeartWidget> with SingleTickerProviderStateMixin {
+class _FloatingHeartWidgetState extends State<_FloatingHeartWidget>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _yAnim;
   late final Animation<double> _opacityAnim;

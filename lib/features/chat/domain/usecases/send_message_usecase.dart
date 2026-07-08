@@ -15,7 +15,8 @@ class SendMessageUseCase {
     return _repository.sendMessage(message);
   }
 
-  Future<void> sendVoice(String coupleId, String senderId, String filePath) async {
+  Future<void> sendVoice(
+      String coupleId, String senderId, String filePath) async {
     if (filePath.isEmpty) throw ArgumentError('File ghi âm không tồn tại.');
     return _repository.sendVoiceMessage(coupleId, senderId, filePath);
   }

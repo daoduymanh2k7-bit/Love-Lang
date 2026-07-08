@@ -13,7 +13,9 @@ import 'package:love_lang/features/chat/domain/usecases/watch_messages_usecase.d
 import 'package:love_lang/core/constants/firestore_paths.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_state.dart';
 
-final chatSendNotifierProvider = AutoDisposeNotifierProvider<ChatSendNotifier, ChatSendState>(ChatSendNotifier.new);
+final chatSendNotifierProvider =
+    AutoDisposeNotifierProvider<ChatSendNotifier, ChatSendState>(
+        ChatSendNotifier.new);
 
 // ─── DI Providers ────────────────────────────────────────────────────────────
 
@@ -40,7 +42,8 @@ final sendMessageUseCaseProvider = Provider<SendMessageUseCase>((ref) {
 
 /// Cung cấp luồng dữ liệu tin nhắn realtime. Cần truyền vào coupleId.
 /// Sử dụng autoDispose theo chuẩn, family để truyền id.
-final chatMessagesProvider = StreamProvider.autoDispose.family<List<MessageEntity>, String>((ref, coupleId) {
+final chatMessagesProvider = StreamProvider.autoDispose
+    .family<List<MessageEntity>, String>((ref, coupleId) {
   final usecase = ref.read(watchMessagesUseCaseProvider);
   return usecase(coupleId);
 });
@@ -55,7 +58,8 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
   }
 
   /// Gửi tin nhắn Text thông thường
-  Future<void> sendText(String coupleId, String senderId, String content) async {
+  Future<void> sendText(
+      String coupleId, String senderId, String content) async {
     state = const ChatSendLoading();
     try {
       final usecase = ref.read(sendMessageUseCaseProvider);
@@ -81,8 +85,10 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
     state = const ChatSendLoading();
     try {
       // Increment the nudgeCount field in the couple document
-      final coupleRef = FirebaseFirestore.instance.doc(FirestorePaths.coupleDoc(coupleId));
-      await coupleRef.update({FirestorePaths.coupleNudgeCount: FieldValue.increment(1)});
+      final coupleRef =
+          FirebaseFirestore.instance.doc(FirestorePaths.coupleDoc(coupleId));
+      await coupleRef
+          .update({FirestorePaths.coupleNudgeCount: FieldValue.increment(1)});
       // No chat message is created; the partner will receive vibration via listener on count change
       state = const ChatSendSuccess();
     } on Failure catch (e) {
@@ -93,7 +99,8 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
   }
 
   /// Gửi file ghi âm (Voice message)
-  Future<void> sendVoice(String coupleId, String senderId, String filePath) async {
+  Future<void> sendVoice(
+      String coupleId, String senderId, String filePath) async {
     state = const ChatSendLoading();
     try {
       final usecase = ref.read(sendMessageUseCaseProvider);
@@ -107,6 +114,10 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
   }
 }
 
-final nudgeCountProvider = StreamProvider.autoDispose.family<int, String>((ref, coupleId) {
-  return FirebaseFirestore.instance.doc(FirestorePaths.coupleDoc(coupleId)).snapshots().map((snap) => (snap.data()?['nudgeCount'] as int?) ?? 0);
+final nudgeCountProvider =
+    StreamProvider.autoDispose.family<int, String>((ref, coupleId) {
+  return FirebaseFirestore.instance
+      .doc(FirestorePaths.coupleDoc(coupleId))
+      .snapshots()
+      .map((snap) => (snap.data()?['nudgeCount'] as int?) ?? 0);
 });

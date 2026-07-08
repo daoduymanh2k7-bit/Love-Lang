@@ -12,6 +12,7 @@ class MarkBucketItemDoneUseCase {
     String? linkedAlbumId,
     String? completionImageUrl,
   }) {
-    return _repository.markDone(coupleId, itemId, linkedAlbumId: linkedAlbumId, completionImageUrl: completionImageUrl);
+    return _repository.markDone(coupleId, itemId,
+        linkedAlbumId: linkedAlbumId, completionImageUrl: completionImageUrl);
   }
 }

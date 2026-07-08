@@ -181,7 +181,12 @@ class _MainScreenState extends ConsumerState<MainScreen>
                           Icons.auto_stories_outlined,
                           'Thư viện',
                           navHighlight),
-                      _buildNavItem(4, Icons.library_books_rounded, Icons.library_books_outlined, 'Thư viện mới', navHighlight),
+                      _buildNavItem(
+                          4,
+                          Icons.library_books_rounded,
+                          Icons.library_books_outlined,
+                          'Thư viện mới',
+                          navHighlight),
                     ],
                   ),
                 ),

@@ -14,7 +14,8 @@ class MessageModel extends MessageEntity {
     super.isRead,
   });
 
-  factory MessageModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory MessageModel.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data();
     if (data == null) throw StateError('Message document rỗng');
 
@@ -52,7 +53,8 @@ class MessageModel extends MessageEntity {
       'coupleId': coupleId,
       'content': content,
       'type': type.name, // Lấy tên chuỗi của enum
-      'timestamp': FieldValue.serverTimestamp(), // CỰC KỲ QUAN TRỌNG: Đồng bộ thời gian qua server
+      'timestamp': FieldValue
+          .serverTimestamp(), // CỰC KỲ QUAN TRỌNG: Đồng bộ thời gian qua server
       'isRead': isRead,
     };
   }
