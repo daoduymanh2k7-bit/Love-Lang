@@ -1,0 +1,27 @@
+name: Flutter Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.0'
+          channel: 'stable'
+
+      - run: flutter pub get
+
+      # Không chặn build nếu có warning/info, chỉ chặn khi có lỗi thật sự.
+      - run: flutter analyze --no-fatal-warnings
+
+      - run: flutter test
