@@ -26,6 +26,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
   // TODO: đổi lại thành true khi muốn hiện lại các icon chức năng (Album, Nhật ký, Bucket, Cột mốc)
   static const bool _showFeatureIcons = false;
 
+  // Trạng thái hiệu ứng "chạm vào đồng hồ": true trong lúc ngón tay còn
+  // giữ trên vùng bấm -> ảnh lịch+đồng hồ tối nhẹ và co lại 1 xíu; nhả tay
+  // ra thì tự dãn về như cũ (xem AnimatedScale/AnimatedOpacity bên dưới).
+  bool _isClockPressed = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,19 +46,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
   void _openMilestoneDialog(BuildContext context) {
     // ignore: avoid_print
     print('>>> Đã chạm vào vùng đồng hồ, đang mở dialog Cột mốc...');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Đã chạm vào đồng hồ ✅'),
-        duration: Duration(milliseconds: 800),
-      ),
-    );
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: Container(
@@ -84,40 +84,116 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     );
   }
 
+  // Kích thước gốc (px) của bộ ảnh library_*.png — TẤT CẢ các lớp ảnh này
+  // đều được thiết kế đúng bằng kích thước này (1080x2340), nên toàn bộ
+  // Stack ảnh + vùng bấm bên dưới phải được đo theo đúng khung này, rồi
+  // scale/crop CẢ KHỐI cùng lúc bằng FittedBox. Nếu để từng Image tự
+  // BoxFit.cover riêng lẻ theo kích thước màn hình thật, mỗi máy có tỷ lệ
+  // màn hình khác 1080:2340 sẽ bị zoom/crop khác nhau, khiến vùng bấm lệch
+  // khỏi hình cái đồng hồ (đây là lỗi "tỷ lệ phóng đại bị sai").
+  static const double _designWidth = 1080;
+  static const double _designHeight = 2340;
+
+  // Lớp ảnh nền + vùng bấm đồng hồ. Trước đây widget này được đặt làm
+  // anh em cùng cấp với Scaffold trong một Stack ngoài cùng, khiến
+  // Scaffold (dùng Material loại canvas, luôn hitTestSelf = true) nằm đè
+  // lên và nuốt mất mọi tap, kể cả những vùng "trong suốt". Giờ đưa hẳn
+  // lớp này vào làm phần tử đầu tiên trong `body` của Scaffold, để chỉ
+  // còn một Material duy nhất và tap được truyền xuống đúng GestureDetector.
+  Widget _buildBackgroundLayer(BuildContext context) {
+    return Positioned.fill(
+      child: FittedBox(
+        fit: BoxFit.cover,
+        alignment: const Alignment(0, -0.3),
+        child: SizedBox(
+          width: _designWidth,
+          height: _designHeight,
+          child: Stack(
+            children: [
+              Image.asset(
+                'assets/images/library_bg.png',
+                width: _designWidth,
+                height: _designHeight,
+                fit: BoxFit.fill,
+              ),
+              Image.asset(
+                'assets/images/library_character_boy_reading.png',
+                width: _designWidth,
+                height: _designHeight,
+                fit: BoxFit.fill,
+              ),
+              Image.asset(
+                'assets/images/library_character_girl_reading.png',
+                width: _designWidth,
+                height: _designHeight,
+                fit: BoxFit.fill,
+              ),
+              // Ảnh lịch + đồng hồ được bọc trong AnimatedScale để tạo hiệu
+              // ứng "bị chạm vào": khi nhấn xuống -> co lại nhẹ (0.96) và
+              // tối đi 1 xíu (overlay đen mờ); khi nhả tay -> tự dãn về
+              // scale 1.0 với hiệu ứng nảy nhẹ (easeOutBack) như lò xo.
+              // Alignment được đặt lệch về phía vùng đồng hồ (góc dưới
+              // trái) để tâm co giãn rơi đúng vào đồng hồ thay vì tâm ảnh.
+              AnimatedScale(
+                scale: _isClockPressed ? 0.96 : 1.0,
+                duration: Duration(milliseconds: _isClockPressed ? 100 : 180),
+                curve: _isClockPressed ? Curves.easeOut : Curves.easeOutBack,
+                alignment: const Alignment(-0.6, 0.63),
+                child: Stack(
+                  children: [
+                    Image.asset(
+                      'assets/images/library_decor_calendar_clock.png',
+                      width: _designWidth,
+                      height: _designHeight,
+                      fit: BoxFit.fill,
+                    ),
+                    AnimatedOpacity(
+                      opacity: _isClockPressed ? 1.0 : 0.0,
+                      duration:
+                          Duration(milliseconds: _isClockPressed ? 80 : 180),
+                      child: Container(
+                        width: _designWidth,
+                        height: _designHeight,
+                        color: Colors.black.withValues(alpha: 0.14),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Vùng bấm giờ tính theo tọa độ THIẾT KẾ cố định
+              // (_designWidth/_designHeight), không phụ thuộc màn hình
+              // thật, nên luôn khớp với vị trí cái đồng hồ trong ảnh.
+              Positioned(
+                left: 0,
+                top: _designHeight * 0.71,
+                width: _designWidth * 0.39,
+                height: _designHeight * 0.21,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTapDown: (_) => setState(() => _isClockPressed = true),
+                  onTapCancel: () => setState(() => _isClockPressed = false),
+                  onTapUp: (_) => setState(() => _isClockPressed = false),
+                  onTap: () => _openMilestoneDialog(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Image.asset(
-            'assets/images/library_bg.png',
-            fit: BoxFit.cover,
-            alignment: const Alignment(0, -0.3),
-          ),
-        ),
-        Positioned.fill(
-          child: Image.asset(
-            'assets/images/library_character_boy_reading.png',
-            fit: BoxFit.cover,
-            alignment: const Alignment(0, -0.3),
-          ),
-        ),
-        Positioned.fill(
-          child: Image.asset(
-            'assets/images/library_character_girl_reading.png',
-            fit: BoxFit.cover,
-            alignment: const Alignment(0, -0.3),
-          ),
-        ),
-        Positioned.fill(
-          child: Image.asset(
-            'assets/images/library_decor_calendar_clock.png',
-            fit: BoxFit.cover,
-            alignment: const Alignment(0, -0.3),
-          ),
-        ),
-        Scaffold(
+    return Scaffold(
       backgroundColor: Colors.transparent,
+      // Trước đây lớp ảnh nằm ở Stack ngoài Scaffold nên nó vẽ full màn
+      // hình, kể cả phần sau AppBar. Giờ ảnh nằm trong `body`, mà mặc định
+      // Scaffold chừa khoảng trống cho AppBar rồi mới vẽ body bên dưới ->
+      // ảnh bị đẩy xuống đúng bằng chiều cao AppBar (+ status bar).
+      // `extendBodyBehindAppBar: true` cho body vẽ full màn hình như cũ,
+      // AppBar vẫn nổi lên trên (đã trong suốt sẵn) mà không đẩy ảnh xuống.
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -148,8 +224,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               )
             : null,
       ),
-      body: _showFeatureIcons
-          ? TabBarView(
+      body: Stack(
+        children: [
+          _buildBackgroundLayer(context),
+          if (_showFeatureIcons)
+            TabBarView(
               controller: _tabController,
               children: [
                 AlbumListScreen(
@@ -169,38 +248,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   currentUserId: widget.currentUserId,
                 ),
               ],
-            )
-          : const SizedBox.shrink(),
-        ),
-        // Vùng bấm (rộng hơn hình đồng hồ 1 chút cho dễ bấm) mở popup Nhật ký
-        // Đặt SAU Scaffold để nằm trên cùng, không bị Scaffold chặn tap
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final w = constraints.maxWidth;
-            final h = constraints.maxHeight;
-            // Cần bọc thêm 1 Stack ở đây thì Positioned bên dưới mới có
-            // đúng "nhà" (Stack làm cha trực tiếp) để top/left/width/height
-            // được áp dụng. Nếu thiếu Stack này, Positioned sẽ bị bỏ qua
-            // toàn bộ ràng buộc và GestureDetector sẽ phình to chiếm hết
-            // phần không gian mà LayoutBuilder được cấp (tức gần như
-            // toàn màn hình) → bấm chỗ nào cũng trúng.
-            return Stack(
-              children: [
-                Positioned(
-                  left: 0,
-                  top: h * 0.71,
-                  width: w * 0.39,
-                  height: h * 0.21,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () => _openMilestoneDialog(context),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ],
+            ),
+        ],
+      ),
     );
   }
 }
