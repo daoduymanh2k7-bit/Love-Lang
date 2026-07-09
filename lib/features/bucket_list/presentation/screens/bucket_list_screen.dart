@@ -44,6 +44,7 @@ class _BucketListScreenState extends ConsumerState<BucketListScreen>
     final itemsAsync = ref.watch(bucketItemsProvider(widget.coupleId));
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor:
           isDark ? const Color(0xFF12121E) : Colors.transparent,
       body: itemsAsync.when(

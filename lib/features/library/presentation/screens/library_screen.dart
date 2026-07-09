@@ -52,33 +52,40 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
       builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.75,
-              color: const Color(0xFFFFF7EC),
-              child: Stack(
-                children: [
-                  MilestoneScreen(
-                    coupleId: widget.coupleId,
-                    currentUserId: widget.currentUserId,
-                  ),
-                  Positioned(
-                    top: 4,
-                    left: 4,
-                    child: IconButton(
-                      icon: const Icon(Icons.chevron_left,
-                          color: Color(0xFF7A4A3A), size: 30),
-                      tooltip: 'Quay lại',
-                      onPressed: () => Navigator.of(context).pop(),
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+            child: Material(
+              color: Colors.transparent,
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: Colors.transparent,
+                body: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height * 0.75,
+                    color: const Color(0xFFFFF7EC),
+                    child: Stack(
+                      children: [
+                        MilestoneScreen(
+                          coupleId: widget.coupleId,
+                          currentUserId: widget.currentUserId,
+                        ),
+                        Positioned(
+                          top: 4,
+                          left: 4,
+                          child: IconButton(
+                            icon: const Icon(Icons.chevron_left,
+                                color: Color(0xFF7A4A3A), size: 30),
+                            tooltip: 'Quay lại',
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -92,34 +99,41 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
       builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.75,
-              color: const Color(0xFFFFF7EC),
-              child: Stack(
-                children: [
-                  AlbumListScreen(
-                    coupleId: widget.coupleId,
-                    currentUserId: widget.currentUserId,
-                    showAppBarBackButton: false,
-                  ),
-                  Positioned(
-                    top: 4,
-                    left: 4,
-                    child: IconButton(
-                      icon: const Icon(Icons.chevron_left,
-                          color: Color(0xFF7A4A3A), size: 30),
-                      tooltip: 'Quay lại',
-                      onPressed: () => Navigator.of(context).pop(),
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+            child: Material(
+              color: Colors.transparent,
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: Colors.transparent,
+                body: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height * 0.75,
+                    color: const Color(0xFFFFF7EC),
+                    child: Stack(
+                      children: [
+                        AlbumListScreen(
+                          coupleId: widget.coupleId,
+                          currentUserId: widget.currentUserId,
+                          showAppBarBackButton: false,
+                        ),
+                        Positioned(
+                          top: 4,
+                          left: 4,
+                          child: IconButton(
+                            icon: const Icon(Icons.chevron_left,
+                                color: Color(0xFF7A4A3A), size: 30),
+                            tooltip: 'Quay lại',
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -133,34 +147,41 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
       builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.75,
-              color: const Color(0xFFFFF7EC),
-              child: Stack(
-                children: [
-                  BucketListScreen(
-                    coupleId: widget.coupleId,
-                    currentUserId: widget.currentUserId,
-                    showAppBarBackButton: false,
-                  ),
-                  Positioned(
-                    top: 4,
-                    left: 4,
-                    child: IconButton(
-                      icon: const Icon(Icons.chevron_left,
-                          color: Color(0xFF7A4A3A), size: 30),
-                      tooltip: 'Quay lại',
-                      onPressed: () => Navigator.of(context).pop(),
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+            child: Material(
+              color: Colors.transparent,
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: Colors.transparent,
+                body: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height * 0.75,
+                    color: const Color(0xFFFFF7EC),
+                    child: Stack(
+                      children: [
+                        BucketListScreen(
+                          coupleId: widget.coupleId,
+                          currentUserId: widget.currentUserId,
+                          showAppBarBackButton: false,
+                        ),
+                        Positioned(
+                          top: 4,
+                          left: 4,
+                          child: IconButton(
+                            icon: const Icon(Icons.chevron_left,
+                                color: Color(0xFF7A4A3A), size: 30),
+                            tooltip: 'Quay lại',
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -378,6 +399,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
       // Trước đây lớp ảnh nằm ở Stack ngoài Scaffold nên nó vẽ full màn
       // hình, kể cả phần sau AppBar. Giờ ảnh nằm trong `body`, mà mặc định

@@ -264,6 +264,7 @@ class AlbumListScreen extends ConsumerWidget {
     });
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: backgroundColor,
       appBar: showAppBarBackButton
           ? AppBar(

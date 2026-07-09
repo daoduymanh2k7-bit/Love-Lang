@@ -122,6 +122,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
     final navHighlight = currentIndex < 2 ? currentIndex : currentIndex + 1;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           IndexedStack(
