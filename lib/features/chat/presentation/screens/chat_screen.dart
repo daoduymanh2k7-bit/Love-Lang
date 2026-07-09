@@ -189,11 +189,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       // Phân biệt "từ chối" (có thể xin lại) và "từ chối vĩnh viễn"
       // (phải vào Settings) để đưa ra hướng dẫn đúng cho người dùng.
       final micStatus = await Permission.microphone.status;
+      if (!mounted) return;
 
       if (micStatus.isPermanentlyDenied) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
+          const SnackBar(
+            content: Text(
                 'Bạn đã tắt quyền micro. Vào Cài đặt để bật lại nhé.'),
             action: SnackBarAction(
               label: 'Mở Cài đặt',
