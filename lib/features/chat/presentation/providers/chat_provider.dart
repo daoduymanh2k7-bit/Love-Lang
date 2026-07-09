@@ -1,16 +1,17 @@
 // lib/features/chat/presentation/providers/chat_provider.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:love_lang/core/error/failures.dart';
 import 'package:love_lang/features/chat/data/datasources/chat_remote_datasource.dart';
 import 'package:love_lang/features/chat/data/repositories/chat_repository_impl.dart';
 import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
 import 'package:love_lang/features/chat/domain/repositories/chat_repository.dart';
+import 'package:love_lang/features/chat/domain/usecases/mark_messages_as_read_usecase.dart';
 import 'package:love_lang/features/chat/domain/usecases/send_message_usecase.dart';
+import 'package:love_lang/features/chat/domain/usecases/send_nudge_usecase.dart';
 import 'package:love_lang/features/chat/domain/usecases/watch_messages_usecase.dart';
-import 'package:love_lang/core/constants/firestore_paths.dart';
+import 'package:love_lang/features/chat/domain/usecases/watch_nudge_count_usecase.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_state.dart';
 
 final chatSendNotifierProvider =
@@ -22,7 +23,6 @@ final chatSendNotifierProvider =
 final chatRemoteDatasourceProvider = Provider<ChatRemoteDatasource>((ref) {
   return ChatRemoteDatasourceImpl(
     firestore: FirebaseFirestore.instance,
-    storage: FirebaseStorage.instance,
   );
 });
 
@@ -36,6 +36,19 @@ final watchMessagesUseCaseProvider = Provider<WatchMessagesUseCase>((ref) {
 
 final sendMessageUseCaseProvider = Provider<SendMessageUseCase>((ref) {
   return SendMessageUseCase(ref.read(chatRepositoryProvider));
+});
+
+final sendNudgeUseCaseProvider = Provider<SendNudgeUseCase>((ref) {
+  return SendNudgeUseCase(ref.read(chatRepositoryProvider));
+});
+
+final watchNudgeCountUseCaseProvider = Provider<WatchNudgeCountUseCase>((ref) {
+  return WatchNudgeCountUseCase(ref.read(chatRepositoryProvider));
+});
+
+final markMessagesAsReadUseCaseProvider =
+    Provider<MarkMessagesAsReadUseCase>((ref) {
+  return MarkMessagesAsReadUseCase(ref.read(chatRepositoryProvider));
 });
 
 // ─── Stream Provider (Realtime Chat) ──────────────────────────────────────────
@@ -80,16 +93,15 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
     }
   }
 
-  /// Gửi tin nhắn Chọc ghẹo (Nudge) – now increments nudge count only
+  /// Gửi tin nhắn Chọc ghẹo (Nudge) – chỉ tăng bộ đếm nudge, không tạo message.
+  /// `senderId` hiện chưa dùng tới (nudge không gắn với người gửi cụ thể ở
+  /// tầng lưu trữ) nhưng vẫn giữ trong chữ ký để không phá vỡ lời gọi hiện có
+  /// và phòng khi cần ghi nhận ai là người nudge trong tương lai.
   Future<void> sendNudge(String coupleId, String senderId) async {
     state = const ChatSendLoading();
     try {
-      // Increment the nudgeCount field in the couple document
-      final coupleRef =
-          FirebaseFirestore.instance.doc(FirestorePaths.coupleDoc(coupleId));
-      await coupleRef
-          .update({FirestorePaths.coupleNudgeCount: FieldValue.increment(1)});
-      // No chat message is created; the partner will receive vibration via listener on count change
+      final usecase = ref.read(sendNudgeUseCaseProvider);
+      await usecase(coupleId);
       state = const ChatSendSuccess();
     } on Failure catch (e) {
       state = ChatSendError(e.message);
@@ -112,12 +124,29 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
       state = ChatSendError('Lỗi gửi ghi âm: $e');
     }
   }
+
+  /// Gửi file ảnh (Image message)
+  Future<void> sendImage(
+      String coupleId, String senderId, String filePath) async {
+    state = const ChatSendLoading();
+    try {
+      final usecase = ref.read(sendMessageUseCaseProvider);
+      await usecase.sendImage(coupleId, senderId, filePath);
+      state = const ChatSendSuccess();
+    } on Failure catch (e) {
+      state = ChatSendError(e.message);
+    } catch (e) {
+      state = ChatSendError('Lỗi gửi ảnh: $e');
+    }
+  }
 }
 
+/// Số lần nudge realtime giữa 2 người trong cặp đôi.
+/// Đi qua [WatchNudgeCountUseCase] -> [ChatRepository] thay vì đọc thẳng
+/// Firestore, để tầng presentation không phụ thuộc trực tiếp vào cấu trúc
+/// dữ liệu (field name, collection path) ở tầng data.
 final nudgeCountProvider =
     StreamProvider.autoDispose.family<int, String>((ref, coupleId) {
-  return FirebaseFirestore.instance
-      .doc(FirestorePaths.coupleDoc(coupleId))
-      .snapshots()
-      .map((snap) => (snap.data()?['nudgeCount'] as int?) ?? 0);
+  final usecase = ref.read(watchNudgeCountUseCaseProvider);
+  return usecase(coupleId);
 });

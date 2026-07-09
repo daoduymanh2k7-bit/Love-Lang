@@ -1,6 +1,7 @@
 // lib/features/chat/presentation/widgets/message_bubble.dart
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
 
@@ -8,10 +9,16 @@ class MessageBubble extends StatelessWidget {
   final MessageEntity message;
   final bool isMe;
 
+  /// Chỉ true cho tin nhắn CUỐI CÙNG mà chính người dùng hiện tại đã gửi.
+  /// Dùng để hiện chữ "Đã xem" giống Messenger/Zalo — không hiện lặp lại
+  /// trên toàn bộ các tin nhắn cũ để tránh rối giao diện.
+  final bool showReadReceipt;
+
   const MessageBubble({
     super.key,
     required this.message,
     required this.isMe,
+    this.showReadReceipt = false,
   });
 
   @override
@@ -53,33 +60,52 @@ class MessageBubble extends StatelessWidget {
       );
     }
 
-    // Các loại tin nhắn thông thường (Text, Voice)
+    // Các loại tin nhắn thông thường (Text, Voice, Image)
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          if (!isMe) _buildAvatar(),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isMe ? Colors.pinkAccent : Colors.grey.shade200,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isMe ? 16 : 4),
-                  bottomRight: Radius.circular(isMe ? 4 : 16),
+          Row(
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe) _buildAvatar(),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isMe ? Colors.pinkAccent : Colors.grey.shade200,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(16),
+                      topRight: const Radius.circular(16),
+                      bottomLeft: Radius.circular(isMe ? 16 : 4),
+                      bottomRight: Radius.circular(isMe ? 4 : 16),
+                    ),
+                  ),
+                  child: _buildMessageContent(),
                 ),
               ),
-              child: _buildMessageContent(),
-            ),
+              const SizedBox(width: 8),
+              if (isMe) _buildAvatar(),
+            ],
           ),
-          const SizedBox(width: 8),
-          if (isMe) _buildAvatar(),
+          // Chỉ hiện ở tin nhắn cuối cùng do MÌNH gửi, và chỉ khi đối
+          // phương đã thực sự đọc (isRead == true).
+          if (showReadReceipt && isMe && message.isRead)
+            Padding(
+              padding: const EdgeInsets.only(right: 4, top: 2),
+              child: Text(
+                'Đã xem',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -104,6 +130,11 @@ class MessageBubble extends StatelessWidget {
         audioUrl: message.content,
         isMe: isMe,
       );
+    }
+
+    if (message.isImage) {
+      // Tin nhắn Ảnh -> Hiển thị thumbnail, tap để xem full-screen
+      return _ImageMessageWidget(imageUrl: message.content);
     }
 
     // Mặc định Text
@@ -232,6 +263,89 @@ class _VoicePlayerWidgetState extends State<_VoicePlayerWidget> {
           ],
         )
       ],
+    );
+  }
+}
+
+// ─── Hiển thị Tin Nhắn Ảnh ───────────────────────────────────────────────────
+
+class _ImageMessageWidget extends StatelessWidget {
+  final String imageUrl;
+
+  const _ImageMessageWidget({required this.imageUrl});
+
+  void _openFullScreen(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black,
+        pageBuilder: (_, __, ___) => _FullScreenImageViewer(imageUrl: imageUrl),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _openFullScreen(context),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          width: 180,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Container(
+            width: 180,
+            height: 180,
+            alignment: Alignment.center,
+            child: const CircularProgressIndicator(strokeWidth: 2),
+          ),
+          errorWidget: (context, url, error) => Container(
+            width: 180,
+            height: 120,
+            alignment: Alignment.center,
+            color: Colors.grey.shade300,
+            child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FullScreenImageViewer extends StatelessWidget {
+  final String imageUrl;
+
+  const _FullScreenImageViewer({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(),
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Center(
+                child: InteractiveViewer(
+                  minScale: 0.8,
+                  maxScale: 4,
+                  child: CachedNetworkImage(imageUrl: imageUrl),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

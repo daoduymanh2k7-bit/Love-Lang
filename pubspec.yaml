@@ -9,7 +9,6 @@ dependencies:
   flutter:
     sdk: flutter
   cloud_firestore: any
-  firebase_storage: any
   flutter_riverpod: 2.5.1
   record: any
   audioplayers: any
@@ -28,6 +27,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  mocktail: ^1.0.4
 
 flutter:
   uses-material-design: true

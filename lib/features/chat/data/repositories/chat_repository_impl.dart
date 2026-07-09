@@ -43,4 +43,43 @@ class ChatRepositoryImpl implements ChatRepository {
       throw ServerFailure(message: 'Lỗi upload âm thanh: $e');
     }
   }
+
+  @override
+  Future<void> sendImageMessage(
+      String coupleId, String senderId, String filePath) async {
+    try {
+      await _remoteDatasource.sendImageMessage(coupleId, senderId, filePath);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    } catch (e) {
+      throw ServerFailure(message: 'Lỗi upload ảnh: $e');
+    }
+  }
+
+  @override
+  Future<void> incrementNudgeCount(String coupleId) async {
+    try {
+      await _remoteDatasource.incrementNudgeCount(coupleId);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    } catch (e) {
+      throw ServerFailure(message: 'Lỗi gửi nudge: $e');
+    }
+  }
+
+  @override
+  Stream<int> watchNudgeCount(String coupleId) {
+    return _remoteDatasource.watchNudgeCount(coupleId);
+  }
+
+  @override
+  Future<void> markMessagesAsRead(String coupleId, String readerId) async {
+    try {
+      await _remoteDatasource.markMessagesAsRead(coupleId, readerId);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    } catch (e) {
+      throw ServerFailure(message: 'Lỗi cập nhật trạng thái đã đọc: $e');
+    }
+  }
 }

@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:love_lang/core/presentation/providers/main_tab_provider.dart';
 
-import 'package:love_lang/features/chat/presentation/providers/chat_provider.dart';
-import 'package:love_lang/features/album/presentation/providers/album_provider.dart';
+import 'package:love_lang/features/home/presentation/providers/home_provider.dart';
+import 'package:love_lang/features/home/presentation/widgets/couple_illustration_card.dart';
+import 'package:love_lang/features/home/presentation/widgets/floating_heart.dart';
+import 'package:love_lang/features/home/presentation/widgets/memory_carousel_section.dart';
 
+/// Màn hình Home.
+///
+/// Chỉ còn chịu trách nhiệm bố cục tổng thể (layout) và điều phối các
+/// section con. Các trách nhiệm khác đã được tách ra:
+/// - Hiệu ứng trái tim bay: [FloatingHeartWidget] (widgets/floating_heart.dart)
+/// - Section album: [MemoryCarouselSection] (widgets/memory_carousel_section.dart)
+/// - Card minh họa: [CoupleIllustrationCard] (widgets/couple_illustration_card.dart)
+/// - Logic gửi nudge (vốn thuộc feature chat): [homeNudgeControllerProvider]
+///   (providers/home_provider.dart)
 class HomeScreen extends ConsumerStatefulWidget {
   final String coupleId;
   final String currentUserId;
@@ -20,34 +29,13 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with TickerProviderStateMixin {
-  late final AnimationController _heartAnimController;
-  final List<_FloatingHeart> _floatingHearts = [];
-  late final PageController _albumPageController;
-  int _currentAlbumPage = 0;
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final List<FloatingHeart> _floatingHearts = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _heartAnimController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-    _albumPageController = PageController(viewportFraction: 0.85);
-  }
-
-  @override
-  void dispose() {
-    _heartAnimController.dispose();
-    _albumPageController.dispose();
-    super.dispose();
-  }
-
-  void _triggerNudge() async {
+  Future<void> _triggerNudge() async {
     setState(() {
       for (int i = 0; i < 6; i++) {
-        _floatingHearts.add(_FloatingHeart(
+        _floatingHearts.add(FloatingHeart(
           key: UniqueKey(),
           startX: 0.7 + (i * 0.05),
           delayMs: i * 150,
@@ -56,9 +44,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     });
 
     try {
-      await ref.read(chatSendNotifierProvider.notifier).sendNudge(
-            widget.coupleId,
-            widget.currentUserId,
+      await ref.read(homeNudgeControllerProvider).sendNudge(
+            coupleId: widget.coupleId,
+            currentUserId: widget.currentUserId,
           );
 
       if (mounted) {
@@ -95,8 +83,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final albumsAsync = ref.watch(albumsProvider(widget.coupleId));
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
         isDark ? const Color(0xFF1E1E2C) : const Color(0xFFFBE4D8);
@@ -114,14 +100,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-
                   const SizedBox(height: 24),
 
                   // SECTION 2: Memory Carousel
-                  _buildMemoryCarouselSection(albumsAsync, isDark),
+                  MemoryCarouselSection(coupleId: widget.coupleId),
 
                   // SECTION 3: Couple Illustration Card
-                  _buildCoupleIllustrationCard(isDark),
+                  CoupleIllustrationCard(isDark: isDark),
                 ],
               ),
             ),
@@ -129,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
           // Floating hearts animation overlays
           ..._floatingHearts.map((heart) {
-            return _FloatingHeartWidget(
+            return FloatingHeartWidget(
               key: heart.key,
               startX: heart.startX,
               delayMs: heart.delayMs,
@@ -174,374 +159,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildMemoryCarouselSection(
-      AsyncValue<List<dynamic>> albumsAsync, bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0, bottom: 12.0),
-          child: Text(
-            'Album kỷ niệm',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF6D4C41),
-            ),
-          ),
-        ),
-        albumsAsync.when(
-          loading: () => const SizedBox(
-            height: 180,
-            child: Center(
-                child: CircularProgressIndicator(color: Color(0xFFE8889A))),
-          ),
-          error: (err, stack) => Container(
-            height: 180,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Center(child: Text('Lỗi: $err')),
-          ),
-          data: (albums) {
-            if (albums.isEmpty) {
-              return GestureDetector(
-                onTap: () {
-                  ref.read(mainTabProvider.notifier).state = 3;
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF2C2C3E)
-                        : const Color(0xFFFFF7EC),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0xFFE8889A).withValues(alpha: 0.5),
-                      width: 1.5,
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add_photo_alternate_outlined,
-                          size: 40, color: Color(0xFFE8889A)),
-                      SizedBox(height: 8),
-                      Text(
-                        'Chưa có album nào. Tạo ngay nào!',
-                        style: TextStyle(
-                          color: Color(0xFFE8889A),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            return Column(
-              children: [
-                SizedBox(
-                  height: 180,
-                  child: PageView.builder(
-                    controller: _albumPageController,
-                    itemCount: albums.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentAlbumPage = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      final album = albums[index];
-                      return GestureDetector(
-                        onTap: () {
-                          ref.read(mainTabProvider.notifier).state = 3;
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 6,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Stack(
-                              children: [
-                                Positioned.fill(
-                                  child: album.coverUrl.isNotEmpty
-                                      ? CachedNetworkImage(
-                                          imageUrl: album.coverUrl,
-                                          fit: BoxFit.cover,
-                                          placeholder: (context, url) =>
-                                              Container(
-                                            color: Colors.grey[200],
-                                            child: const Center(
-                                                child:
-                                                    CircularProgressIndicator()),
-                                          ),
-                                          errorWidget: (context, url, error) =>
-                                              Container(
-                                            color: Colors.grey[200],
-                                            child: const Icon(
-                                                Icons.broken_image,
-                                                color: Colors.grey),
-                                          ),
-                                        )
-                                      : Container(
-                                          color: const Color(0xFFFFF7EC),
-                                          child: const Icon(
-                                            Icons.photo_library,
-                                            size: 48,
-                                            color: Color(0xFFE8889A),
-                                          ),
-                                        ),
-                                ),
-                                Positioned.fill(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.transparent,
-                                          Colors.black.withValues(alpha: 0.7),
-                                        ],
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 16,
-                                  left: 16,
-                                  right: 16,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        album.title,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      if (album.description.isNotEmpty) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          album.description,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.white70,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                if (albums.length > 1) ...[
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      albums.length,
-                      (index) => Container(
-                        width: 8,
-                        height: 8,
-                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentAlbumPage == index
-                              ? const Color(0xFFE8889A)
-                              : const Color(0xFFE8889A).withValues(alpha: 0.3),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCoupleIllustrationCard(bool isDark) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C3E) : const Color(0xFFFFF7EC),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 20.0, top: 20.0, right: 20.0, bottom: 8.0),
-            child: Row(
-              children: [
-                const Icon(Icons.home_rounded, color: Color(0xFFE8889A)),
-                const SizedBox(width: 8),
-                Text(
-                  'Góc nhỏ của chúng mình',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : const Color(0xFF6D4C41),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(24),
-              bottomRight: Radius.circular(24),
-            ),
-            child: AspectRatio(
-              aspectRatio: 1.6,
-              child: Image.asset(
-                'assets/images/lobby_illustration.png',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FloatingHeart {
-  final Key key;
-  final double startX;
-  final int delayMs;
-
-  _FloatingHeart({
-    required this.key,
-    required this.startX,
-    required this.delayMs,
-  });
-}
-
-class _FloatingHeartWidget extends StatefulWidget {
-  final double startX;
-  final int delayMs;
-  final VoidKeyCallback onComplete;
-
-  const _FloatingHeartWidget({
-    super.key,
-    required this.startX,
-    required this.delayMs,
-    required this.onComplete,
-  });
-
-  @override
-  State<_FloatingHeartWidget> createState() => _FloatingHeartWidgetState();
-}
-
-typedef VoidKeyCallback = void Function();
-
-class _FloatingHeartWidgetState extends State<_FloatingHeartWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _yAnim;
-  late final Animation<double> _opacityAnim;
-  late final Animation<double> _scaleAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-
-    _yAnim = Tween<double>(begin: 0.0, end: -200.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-
-    _opacityAnim = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: 1.0), weight: 20),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.0), weight: 50),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 0.0), weight: 30),
-    ]).animate(_controller);
-
-    _scaleAnim = Tween<double>(begin: 0.5, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
-
-    Future.delayed(Duration(milliseconds: widget.delayMs), () {
-      if (mounted) {
-        _controller.forward().then((_) => widget.onComplete());
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final screenWidth = MediaQuery.of(context).size.width;
-        final startY = MediaQuery.of(context).padding.top + 32;
-
-        return Positioned(
-          left: screenWidth * widget.startX - 12,
-          top: startY + _yAnim.value,
-          child: Opacity(
-            opacity: _opacityAnim.value,
-            child: Transform.scale(
-              scale: _scaleAnim.value,
-              child: const Icon(
-                Icons.favorite,
-                color: Color(0xFFE8889A),
-                size: 24,
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

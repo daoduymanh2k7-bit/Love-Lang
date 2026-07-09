@@ -20,4 +20,10 @@ class SendMessageUseCase {
     if (filePath.isEmpty) throw ArgumentError('File ghi âm không tồn tại.');
     return _repository.sendVoiceMessage(coupleId, senderId, filePath);
   }
+
+  Future<void> sendImage(
+      String coupleId, String senderId, String filePath) async {
+    if (filePath.isEmpty) throw ArgumentError('File ảnh không tồn tại.');
+    return _repository.sendImageMessage(coupleId, senderId, filePath);
+  }
 }
