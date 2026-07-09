@@ -2,7 +2,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
 import 'package:love_lang/features/chat/domain/usecases/watch_messages_usecase.dart';
 
 import '../../chat_test_mocks.dart';
