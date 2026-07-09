@@ -96,8 +96,10 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
                   const SizedBox(height: 16),
                   InkWell(
                     onTap: () async {
+                      if (!mounted) return;
+                      final currentContext = context;
                       final picked = await showDatePicker(
-                        context: context,
+                        context: currentContext,
                         initialDate: selectedDate,
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
@@ -153,15 +155,17 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
                           borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () async {
+                      if (!mounted) return;
+                      final currentContext = context;
                       final title = titleController.text.trim();
                       if (title.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(currentContext).showSnackBar(
                           const SnackBar(
                               content: Text('Vui lòng nhập tên cột mốc')),
                         );
                         return;
                       }
-                      final navigator = Navigator.of(context);
+                      final navigator = Navigator.of(currentContext);
                       final notifier =
                           ref.read(milestoneActionsProvider.notifier);
                       if (milestone == null) {
@@ -210,11 +214,13 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
+                if (!mounted) return;
+                final navigator = Navigator.of(context);
                 await ref
                     .read(milestoneActionsProvider.notifier)
                     .deleteMilestone(widget.coupleId, milestone.id);
                 if (!mounted) return;
-                Navigator.pop(context);
+                navigator.pop();
               },
               child: const Text('Xóa', style: TextStyle(color: Colors.white)),
             ),
@@ -236,16 +242,6 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
       error: (err, stack) => _buildCardError(err.toString()),
       data: (couple) {
         if (couple == null) return const SizedBox();
-        final partnerUid =
-            couple.uid1 == widget.currentUserId ? couple.uid2 : couple.uid1;
-        final myUserAsync =
-            ref.watch(milestoneUserDocProvider(widget.currentUserId));
-        final partnerUserAsync =
-            ref.watch(milestoneUserDocProvider(partnerUid));
-        final String myName =
-            myUserAsync.value?['displayName'] as String? ?? 'Bạn';
-        final String partnerName =
-            partnerUserAsync.value?['displayName'] as String? ?? 'Đối phương';
         return milestonesAsync.when(
           loading: () => _buildCardShimmer(),
           error: (err, stack) => _buildCardError(err.toString()),
@@ -271,28 +267,39 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
                   padding: const EdgeInsets.only(
                       left: 4.0, bottom: 12.0, right: 8.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Cột mốc kỷ niệm',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              isDark ? Colors.white : const Color(0xFF6D4C41),
+                      const SizedBox(width: 48),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'Cột mốc kỷ niệm',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF6D4C41),
+                            ),
+                          ),
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => _showAddEditMilestoneBottomSheet(),
-                        icon: const Icon(Icons.add_circle_outline,
-                            color: Color(0xFFE8889A), size: 28),
-                        tooltip: 'Thêm cột mốc mới',
+                      SizedBox(
+                        width: 48,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            onPressed: () => _showAddEditMilestoneBottomSheet(),
+                            icon: const Icon(Icons.add_circle_outline,
+                                color: Color(0xFFE8889A), size: 28),
+                            tooltip: 'Thêm cột mốc mới',
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(
-                  height: 180,
+                  height: 220,
                   child: PageView.builder(
                     controller: _milestonePageController,
                     itemCount: milestones.length,
@@ -328,46 +335,12 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
                           ],
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 20),
+                            horizontal: 24, vertical: 24),
                         child: Stack(
                           children: [
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        myName,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF6D4C41)),
-                                        textAlign: TextAlign.right,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Icon(Icons.favorite,
-                                          color: Color(0xFFE8889A), size: 24),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        partnerName,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF6D4C41)),
-                                        textAlign: TextAlign.left,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
                                 Text(
                                   milestone.title,
                                   style: const TextStyle(
@@ -386,7 +359,7 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
                                   textBaseline: TextBaseline.alphabetic,
                                   children: [
                                     Text(
-                                      isFuture ? 'Còn ' : 'Đã ',
+                                      isFuture ? 'Còn ' : 'Đã qua ',
                                       style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
@@ -407,7 +380,7 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      isFuture ? ' ngày' : ' ngày bên nhau',
+                                      isFuture ? ' ngày' : ' ngày',
                                       style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
@@ -420,23 +393,56 @@ class _MilestoneScreenState extends ConsumerState<MilestoneScreen>
                             if (!milestone.isDefault)
                               Positioned(
                                 top: 0,
+                                left: 0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: const Color(0xFF6D4C41)
+                                          .withValues(alpha: 0.05),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Color(0xFF5D4037), size: 20),
+                                    onPressed: () =>
+                                        _showAddEditMilestoneBottomSheet(milestone),
+                                    tooltip: 'Chỉnh sửa',
+                                    padding: const EdgeInsets.all(10),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 24,
+                                      minHeight: 24,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            if (!milestone.isDefault)
+                              Positioned(
+                                top: 0,
                                 right: 0,
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit,
-                                          color: Color(0xFF5D4037), size: 18),
-                                      onPressed: () =>
-                                          _showAddEditMilestoneBottomSheet(
-                                              milestone),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.redAccent.withValues(alpha: 0.06),
+                                      width: 2,
                                     ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_forever,
-                                          color: Colors.redAccent, size: 18),
-                                      onPressed: () =>
-                                          _confirmDeleteMilestone(milestone),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.delete_forever,
+                                        color: Colors.redAccent, size: 20),
+                                    onPressed: () =>
+                                        _confirmDeleteMilestone(milestone),
+                                    tooltip: 'Xóa',
+                                    padding: const EdgeInsets.all(10),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 24,
+                                      minHeight: 24,
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                           ],

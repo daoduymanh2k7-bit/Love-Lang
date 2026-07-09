@@ -37,3 +37,6 @@ flutter:
     - assets/images/library_character_boy_reading.png
     - assets/images/library_character_girl_reading.png
     - assets/images/library_decor_calendar_clock.png
+    - assets/images/library_decor_bookcase.png
+    - assets/images/library_decor_album.png
+    - assets/images/library_decor_board.png

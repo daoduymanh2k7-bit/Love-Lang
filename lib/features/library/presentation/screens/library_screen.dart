@@ -30,6 +30,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
   // giữ trên vùng bấm -> ảnh lịch+đồng hồ tối nhẹ và co lại 1 xíu; nhả tay
   // ra thì tự dãn về như cũ (xem AnimatedScale/AnimatedOpacity bên dưới).
   bool _isClockPressed = false;
+  bool _isAlbumPressed = false;
+  bool _isBoardPressed = false;
 
   @override
   void initState() {
@@ -68,10 +70,93 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   ),
                   Positioned(
                     top: 4,
-                    right: 4,
+                    left: 4,
                     child: IconButton(
-                      icon: const Icon(Icons.close_rounded,
-                          color: Color(0xFF7A4A3A)),
+                      icon: const Icon(Icons.chevron_left,
+                          color: Color(0xFF7A4A3A), size: 30),
+                      tooltip: 'Quay lại',
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _openAlbumDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Container(
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.75,
+              color: const Color(0xFFFFF7EC),
+              child: Stack(
+                children: [
+                  AlbumListScreen(
+                    coupleId: widget.coupleId,
+                    currentUserId: widget.currentUserId,
+                    showAppBarBackButton: false,
+                  ),
+                  Positioned(
+                    top: 4,
+                    left: 4,
+                    child: IconButton(
+                      icon: const Icon(Icons.chevron_left,
+                          color: Color(0xFF7A4A3A), size: 30),
+                      tooltip: 'Quay lại',
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _openBucketListDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Container(
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.75,
+              color: const Color(0xFFFFF7EC),
+              child: Stack(
+                children: [
+                  BucketListScreen(
+                    coupleId: widget.coupleId,
+                    currentUserId: widget.currentUserId,
+                    showAppBarBackButton: false,
+                  ),
+                  Positioned(
+                    top: 4,
+                    left: 4,
+                    child: IconButton(
+                      icon: const Icon(Icons.chevron_left,
+                          color: Color(0xFF7A4A3A), size: 30),
+                      tooltip: 'Quay lại',
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
@@ -116,6 +201,80 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                 height: _designHeight,
                 fit: BoxFit.fill,
               ),
+              AnimatedScale(
+                scale: _isBoardPressed ? 0.96 : 1.0,
+                duration: Duration(milliseconds: _isBoardPressed ? 100 : 180),
+                curve: _isBoardPressed ? Curves.easeOut : Curves.easeOutBack,
+                alignment: const Alignment(0.82, -0.57),
+                child: Stack(
+                  children: [
+                    Image.asset(
+                      'assets/images/library_decor_board.png',
+                      width: _designWidth,
+                      height: _designHeight,
+                      fit: BoxFit.fill,
+                    ),
+                    AnimatedOpacity(
+                      opacity: _isBoardPressed ? 1.0 : 0.0,
+                      duration:
+                          Duration(milliseconds: _isBoardPressed ? 80 : 180),
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withValues(alpha: 0.14),
+                          BlendMode.srcATop,
+                        ),
+                        child: Image.asset(
+                          'assets/images/library_decor_board.png',
+                          width: _designWidth,
+                          height: _designHeight,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Image.asset(
+                'assets/images/library_decor_bookcase.png',
+                width: _designWidth,
+                height: _designHeight,
+                fit: BoxFit.fill,
+              ),
+              // Hiệu ứng chạm vào album được giữ giống đồng hồ: co nhẹ khi nhấn,
+              // tối đi một chút và trở lại bình thường khi thả tay.
+              AnimatedScale(
+                scale: _isAlbumPressed ? 0.96 : 1.0,
+                duration: Duration(milliseconds: _isAlbumPressed ? 100 : 180),
+                curve: _isAlbumPressed ? Curves.easeOut : Curves.easeOutBack,
+                alignment: const Alignment(0.73, 0.31),
+                child: Stack(
+                  children: [
+                    Image.asset(
+                      'assets/images/library_decor_album.png',
+                      width: _designWidth,
+                      height: _designHeight,
+                      fit: BoxFit.fill,
+                    ),
+                    AnimatedOpacity(
+                      opacity: _isAlbumPressed ? 1.0 : 0.0,
+                      duration:
+                          Duration(milliseconds: _isAlbumPressed ? 80 : 180),
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withValues(alpha: 0.14),
+                          BlendMode.srcATop,
+                        ),
+                        child: Image.asset(
+                          'assets/images/library_decor_album.png',
+                          width: _designWidth,
+                          height: _designHeight,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               Image.asset(
                 'assets/images/library_character_boy_reading.png',
                 width: _designWidth,
@@ -151,18 +310,23 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                       opacity: _isClockPressed ? 1.0 : 0.0,
                       duration:
                           Duration(milliseconds: _isClockPressed ? 80 : 180),
-                      child: Container(
-                        width: _designWidth,
-                        height: _designHeight,
-                        color: Colors.black.withValues(alpha: 0.14),
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withValues(alpha: 0.14),
+                          BlendMode.srcATop,
+                        ),
+                        child: Image.asset(
+                          'assets/images/library_decor_calendar_clock.png',
+                          width: _designWidth,
+                          height: _designHeight,
+                          fit: BoxFit.fill,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              // Vùng bấm giờ tính theo tọa độ THIẾT KẾ cố định
-              // (_designWidth/_designHeight), không phụ thuộc màn hình
-              // thật, nên luôn khớp với vị trí cái đồng hồ trong ảnh.
+              // Vùng bấm đồng hồ tính theo tọa độ THIẾT KẾ cố định.
               Positioned(
                 left: 0,
                 top: _designHeight * 0.71,
@@ -174,6 +338,34 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   onTapCancel: () => setState(() => _isClockPressed = false),
                   onTapUp: (_) => setState(() => _isClockPressed = false),
                   onTap: () => _openMilestoneDialog(context),
+                ),
+              ),
+              // Vùng bấm cho bảng Wish List theo tỷ lệ thiết kế.
+              Positioned(
+                left: _designWidth * 0.83,
+                top: _designHeight * 0.15,
+                width: _designWidth * 0.16,
+                height: _designHeight * 0.13,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTapDown: (_) => setState(() => _isBoardPressed = true),
+                  onTapCancel: () => setState(() => _isBoardPressed = false),
+                  onTapUp: (_) => setState(() => _isBoardPressed = false),
+                  onTap: () => _openBucketListDialog(context),
+                ),
+              ),
+              // Vùng bấm cho ảnh album, căn theo tọa độ ước tính X 77%-96%, Y 62%-69%.
+              Positioned(
+                left: _designWidth * 0.77,
+                top: _designHeight * 0.62,
+                width: _designWidth * 0.19,
+                height: _designHeight * 0.07,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTapDown: (_) => setState(() => _isAlbumPressed = true),
+                  onTapCancel: () => setState(() => _isAlbumPressed = false),
+                  onTapUp: (_) => setState(() => _isAlbumPressed = false),
+                  onTap: () => _openAlbumDialog(context),
                 ),
               ),
             ],
@@ -197,14 +389,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Thư viện',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF7A4A3A),
-          ),
-        ),
-        centerTitle: true,
+        titleSpacing: 0,
+        toolbarHeight: 0,
+        automaticallyImplyLeading: false,
         bottom: _showFeatureIcons
             ? TabBar(
                 controller: _tabController,

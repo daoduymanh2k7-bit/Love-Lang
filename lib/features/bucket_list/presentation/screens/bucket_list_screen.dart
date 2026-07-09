@@ -9,11 +9,13 @@ import '../widgets/add_edit_bucket_item_sheet.dart';
 class BucketListScreen extends ConsumerStatefulWidget {
   final String coupleId;
   final String currentUserId;
+  final bool showAppBarBackButton;
 
   const BucketListScreen({
     super.key,
     required this.coupleId,
     required this.currentUserId,
+    this.showAppBarBackButton = true,
   });
 
   @override
@@ -61,6 +63,7 @@ class _BucketListScreenState extends ConsumerState<BucketListScreen>
               SliverAppBar(
                 expandedHeight: 220,
                 pinned: true,
+                automaticallyImplyLeading: widget.showAppBarBackButton,
                 backgroundColor:
                     isDark ? const Color(0xFF1E1E2C) : Colors.white,
                 flexibleSpace: FlexibleSpaceBar(

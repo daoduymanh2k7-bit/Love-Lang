@@ -11,11 +11,13 @@ import 'album_detail_screen.dart';
 class AlbumListScreen extends ConsumerWidget {
   final String coupleId;
   final String currentUserId;
+  final bool showAppBarBackButton;
 
   const AlbumListScreen({
     super.key,
     required this.coupleId,
     required this.currentUserId,
+    this.showAppBarBackButton = true,
   });
 
   void _showCreateAlbumDialog(BuildContext context, WidgetRef ref) {
@@ -263,14 +265,18 @@ class AlbumListScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: const Text('Kho Ảnh Kỷ Niệm',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : accentColor),
-      ),
+      appBar: showAppBarBackButton
+          ? AppBar(
+              title: const Text('Kho Ảnh Kỷ Niệm',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              automaticallyImplyLeading: true,
+              iconTheme:
+                  IconThemeData(color: isDark ? Colors.white : accentColor),
+            )
+          : null,
       body: albumsStream.when(
         data: (albums) {
           if (albums.isEmpty) {
