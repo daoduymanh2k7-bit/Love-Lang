@@ -93,6 +93,29 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
     }
   }
 
+  /// Gửi tin nhắn Sticker (URL ảnh từ GIPHY).
+  Future<void> sendSticker(
+      String coupleId, String senderId, String stickerUrl) async {
+    state = const ChatSendLoading();
+    try {
+      final usecase = ref.read(sendMessageUseCaseProvider);
+      final message = MessageEntity(
+        id: '',
+        senderId: senderId,
+        coupleId: coupleId,
+        content: stickerUrl,
+        type: MessageType.sticker,
+        timestamp: DateTime.now(),
+      );
+      await usecase(message);
+      state = const ChatSendSuccess();
+    } on Failure catch (e) {
+      state = ChatSendError(e.message);
+    } catch (e) {
+      state = ChatSendError('Lỗi gửi sticker: $e');
+    }
+  }
+
   /// Gửi tin nhắn Chọc ghẹo (Nudge) – chỉ tăng bộ đếm nudge, không tạo message.
   /// `senderId` hiện chưa dùng tới (nudge không gắn với người gửi cụ thể ở
   /// tầng lưu trữ) nhưng vẫn giữ trong chữ ký để không phá vỡ lời gọi hiện có

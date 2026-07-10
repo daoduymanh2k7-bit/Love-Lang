@@ -10,6 +10,7 @@ import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_provider.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_state.dart';
 import 'package:love_lang/features/chat/presentation/widgets/message_bubble.dart';
+import 'package:love_lang/features/chat/presentation/widgets/sticker_picker_sheet.dart';
 import 'package:love_lang/features/pairing/presentation/providers/pairing_provider.dart';
 import 'package:love_lang/features/profile/presentation/screens/profile_screen.dart'
     show partnerUserProvider;
@@ -142,6 +143,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         SnackBar(content: Text('Không thể chọn ảnh: $e')),
       );
     }
+  }
+
+  // ─── Gửi Sticker (chọn từ GIPHY) ───────────────────────────────────────────
+  Future<void> _openStickerPicker() async {
+    if (ref.read(chatSendNotifierProvider) is ChatSendLoading) {
+      _showBusySnackBar();
+      return;
+    }
+
+    final stickerUrl = await showStickerPickerSheet(context);
+    if (stickerUrl == null) return; // Người dùng đóng sheet không chọn gì
+
+    if (!mounted) return;
+    ref
+        .read(chatSendNotifierProvider.notifier)
+        .sendSticker(widget.coupleId, widget.myUid, stickerUrl);
   }
 
   void _showImageSourceSheet() {
@@ -375,15 +392,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                partnerName,
-                style: const TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w600),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
           ],
         ),
         actions: [
@@ -508,6 +516,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                             : colorScheme.onSurfaceVariant),
                     onPressed:
                         (isSending || _isRecording) ? null : _showImageSourceSheet,
+                  ),
+
+                  // Nút chọn sticker (GIPHY) -> mở bottom sheet chọn, gửi
+                  // ngay khi người dùng tap 1 sticker trong lưới.
+                  IconButton(
+                    icon: Icon(Icons.emoji_emotions_outlined,
+                        color: (isSending || _isRecording)
+                            ? colorScheme.onSurface.withValues(alpha: 0.3)
+                            : colorScheme.onSurfaceVariant),
+                    onPressed: (isSending || _isRecording)
+                        ? null
+                        : _openStickerPicker,
                   ),
 
                   // Nút ghi âm riêng: bấm để bắt đầu ghi, bấm lại để dừng

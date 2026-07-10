@@ -33,6 +33,7 @@ class MessageModel extends MessageEntity {
       'image' => MessageType.image,
       'voice' => MessageType.voice,
       'nudge' => MessageType.nudge,
+      'sticker' => MessageType.sticker,
       _ => MessageType.text,
     };
 

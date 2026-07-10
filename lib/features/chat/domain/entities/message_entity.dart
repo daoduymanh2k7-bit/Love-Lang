@@ -6,6 +6,7 @@ enum MessageType {
   image,
   voice,
   nudge, // Tin nhắn chọc ghẹo (rung máy)
+  sticker, // Sticker lấy từ GIPHY, content là URL ảnh
 }
 
 /// Entity đại diện cho một tin nhắn thuần túy ở tầng Domain.
@@ -32,6 +33,7 @@ class MessageEntity {
   bool get isImage => type == MessageType.image;
   bool get isVoice => type == MessageType.voice;
   bool get isNudge => type == MessageType.nudge;
+  bool get isSticker => type == MessageType.sticker;
 
   MessageEntity copyWith({
     String? id,

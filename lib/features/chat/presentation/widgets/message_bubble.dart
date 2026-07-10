@@ -154,14 +154,18 @@ class _MessageBubbleState extends State<MessageBubble>
               ],
               Flexible(
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isMe
-                        ? colorScheme.primary
-                        : colorScheme.surfaceContainerHighest,
-                    borderRadius: bubbleRadius,
-                  ),
+                  padding: message.isSticker
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                  decoration: message.isSticker
+                      ? null
+                      : BoxDecoration(
+                          color: isMe
+                              ? colorScheme.primary
+                              : colorScheme.surfaceContainerHighest,
+                          borderRadius: bubbleRadius,
+                        ),
                   child: _buildMessageContent(colorScheme),
                 ),
               ),
@@ -231,6 +235,33 @@ class _MessageBubbleState extends State<MessageBubble>
     if (message.isImage) {
       // Tin nhắn Ảnh -> Hiển thị thumbnail, tap để xem full-screen
       return _ImageMessageWidget(imageUrl: message.content);
+    }
+
+    if (message.isSticker) {
+      // Sticker GIPHY -> hiển thị to (kiểu Messenger), không bọc bong bóng
+      // màu nền, không có padding (đã xử lý ở Container cha).
+      return CachedNetworkImage(
+        imageUrl: message.content,
+        width: 130,
+        height: 130,
+        fit: BoxFit.contain,
+        placeholder: (context, url) => const SizedBox(
+          width: 130,
+          height: 130,
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => const SizedBox(
+          width: 80,
+          height: 80,
+          child: Icon(Icons.broken_image_outlined, size: 40),
+        ),
+      );
     }
 
     // Mặc định Text
