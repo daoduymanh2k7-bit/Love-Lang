@@ -10,6 +10,9 @@ import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_provider.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_state.dart';
 import 'package:love_lang/features/chat/presentation/widgets/message_bubble.dart';
+import 'package:love_lang/features/pairing/presentation/providers/pairing_provider.dart';
+import 'package:love_lang/features/profile/presentation/screens/profile_screen.dart'
+    show partnerUserProvider;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
@@ -329,38 +332,88 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final sendState = ref.watch(chatSendNotifierProvider);
     final isSending = sendState is ChatSendLoading;
 
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Tên & chữ cái đầu của đối phương, dùng cho cả AppBar và avatar trong
+    // các bong bóng chat. Chat 1-1 chỉ có đúng 1 đối phương nên lấy thẳng
+    // từ CoupleEntity, không cần chọn ai trong danh sách.
+    final coupleAsync = ref.watch(watchCoupleProvider(widget.coupleId));
+    final partnerName = coupleAsync.maybeWhen(
+          data: (couple) {
+            if (couple == null) return null;
+            final partnerUid = couple.partnerUidOf(widget.myUid);
+            final partnerDocAsync = ref.watch(partnerUserProvider(partnerUid));
+            return partnerDocAsync.maybeWhen(
+              data: (doc) => doc?['displayName'] as String?,
+              orElse: () => null,
+            );
+          },
+          orElse: () => null,
+        ) ??
+        'Người ấy';
+    final partnerInitial =
+        partnerName.isNotEmpty ? partnerName[0].toUpperCase() : '?';
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Tổ ấm của chúng mình ❤️',
-            style: TextStyle(fontSize: 18)),
-        backgroundColor: Colors.pink.shade50,
-        foregroundColor: Colors.pinkAccent,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
-        actions: [
-          Consumer(builder: (context, ref, _) {
-            final nudgeCountAsync =
-                ref.watch(nudgeCountProvider(widget.coupleId));
-            return nudgeCountAsync.when(
-              data: (count) => InkWell(
-                onTap: _sendNudge,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.pink.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text('❤️ x$count',
-                      style: const TextStyle(
-                          color: Colors.pinkAccent,
-                          fontWeight: FontWeight.bold)),
+        scrolledUnderElevation: 1,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: colorScheme.primaryContainer,
+              child: Text(
+                partnerInitial,
+                style: TextStyle(
+                  color: colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const Icon(Icons.error),
-            );
-          }),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                partnerName,
+                style: const TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w600),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Consumer(builder: (context, ref, _) {
+              final nudgeCountAsync =
+                  ref.watch(nudgeCountProvider(widget.coupleId));
+              return nudgeCountAsync.when(
+                data: (count) => InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: _sendNudge,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text('❤️ x$count',
+                        style: TextStyle(
+                            color: colorScheme.onPrimaryContainer,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const Icon(Icons.error),
+              );
+            }),
+          ),
         ],
       ),
       body: Column(
@@ -368,22 +421,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
           // ─── Khung Chat ───
           Expanded(
             child: messagesStream.when(
-              loading: () => const Center(
-                  child: CircularProgressIndicator(color: Colors.pinkAccent)),
+              loading: () => Center(
+                  child:
+                      CircularProgressIndicator(color: colorScheme.primary)),
               error: (err, stack) => Center(child: Text('Lỗi: $err')),
               data: (messages) {
                 if (messages.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text('Hãy gửi lời chào ngọt ngào nhất nào!',
-                        style: TextStyle(color: Colors.grey)),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant)),
                   );
                 }
 
                 final filtered = messages.where((m) => !m.isNudge).toList();
                 if (filtered.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text('Không có tin nhắn nào.',
-                        style: TextStyle(color: Colors.grey)),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant)),
                   );
                 }
 
@@ -393,17 +447,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                 final lastMyMessageIndex =
                     filtered.indexWhere((m) => m.senderId == widget.myUid);
 
+                // Gom tin nhắn liên tiếp cùng người gửi (cách nhau < 3 phút)
+                // thành từng cụm kiểu Messenger, đồng thời chèn dải phân
+                // cách ngày ("Hôm nay", "Hôm qua"...) giữa các cụm khác ngày.
+                final items = _buildChatItems(
+                  filtered: filtered,
+                  myUid: widget.myUid,
+                  lastMyMessageIndex: lastMyMessageIndex,
+                );
+
                 return ListView.builder(
                   controller: _scrollController,
                   reverse: true,
-                  itemCount: filtered.length,
+                  padding: const EdgeInsets.only(top: 8),
+                  itemCount: items.length,
                   itemBuilder: (context, index) {
-                    final message = filtered[index];
-                    final isMe = message.senderId == widget.myUid;
+                    final item = items[index];
+                    if (item.dateLabel != null) {
+                      return _DateSeparator(label: item.dateLabel!);
+                    }
+                    final message = item.message!;
                     return MessageBubble(
+                      key: ValueKey(message.id),
                       message: message,
-                      isMe: isMe,
-                      showReadReceipt: isMe && index == lastMyMessageIndex,
+                      isMe: message.senderId == widget.myUid,
+                      partnerInitial: partnerInitial,
+                      isFirstInGroup: item.isFirstInGroup,
+                      isLastInGroup: item.isLastInGroup,
+                      showReadReceipt: item.showReadReceipt,
                     );
                   },
                 );
@@ -418,10 +489,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
               padding: EdgeInsets.fromLTRB(
                   12, 8, 12, 8 + 72 + MediaQuery.of(context).padding.bottom),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1),
+                    color: Colors.black.withValues(alpha: 0.06),
                     offset: const Offset(0, -2),
                     blurRadius: 4,
                   ),
@@ -432,9 +503,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   // Nút đính kèm ảnh
                   IconButton(
                     icon: Icon(Icons.add_photo_alternate,
-                        color:
-                            isSending ? Colors.grey.shade300 : Colors.grey),
-                    onPressed: isSending ? null : _showImageSourceSheet,
+                        color: (isSending || _isRecording)
+                            ? colorScheme.onSurface.withValues(alpha: 0.3)
+                            : colorScheme.onSurfaceVariant),
+                    onPressed:
+                        (isSending || _isRecording) ? null : _showImageSourceSheet,
+                  ),
+
+                  // Nút ghi âm riêng: bấm để bắt đầu ghi, bấm lại để dừng
+                  // và gửi ngay — độc lập với thao tác GIỮ trên nút gửi
+                  // bên dưới (vẫn giữ nguyên cách cũ), cho người dùng thêm
+                  // 1 cách ghi âm không cần giữ tay liên tục.
+                  IconButton(
+                    icon: Icon(
+                      _isRecording ? Icons.stop_circle : Icons.mic_none,
+                      color: _isRecording
+                          ? colorScheme.error
+                          : (isSending
+                              ? colorScheme.onSurface.withValues(alpha: 0.3)
+                              : colorScheme.onSurfaceVariant),
+                    ),
+                    onPressed: isSending
+                        ? null
+                        : (_isRecording ? _stopRecording : _startRecording),
                   ),
 
                   // Text Input
@@ -450,7 +541,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: colorScheme.surfaceContainerHighest,
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 10),
                       ),
@@ -461,41 +552,211 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   const SizedBox(width: 8),
 
                   // Nút Send / Hold-to-record
-                  GestureDetector(
+                  _SendButton(
+                    isSending: isSending,
+                    isRecording: _isRecording,
+                    color: colorScheme.primary,
+                    recordingColor: colorScheme.error,
+                    disabledColor: colorScheme.onSurface.withValues(alpha: 0.2),
+                    onTap: isSending ? null : _sendText,
                     onLongPress: isSending ? null : _startRecording,
                     onLongPressUp: isSending ? null : _stopRecording,
-                    onTap: isSending ? null : _sendText,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isSending
-                            ? Colors.grey.shade300
-                            : (_isRecording
-                                ? Colors.redAccent
-                                : Colors.pinkAccent),
-                        shape: BoxShape.circle,
-                      ),
-                      child: isSending
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Icon(
-                              _isRecording ? Icons.mic : Icons.send_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                    ),
                   ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Gom nhóm tin nhắn + dải ngày (kiểu Messenger) ─────────────────────────
+//
+// `filtered` được sắp xếp MỚI NHẤT trước (index 0 = mới nhất) vì ListView
+// dùng `reverse: true`. "newer" (filtered[i-1]) luôn gần hiện tại hơn
+// "older" (filtered[i+1]).
+
+class _ChatListItem {
+  final MessageEntity? message;
+  final String? dateLabel;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
+  final bool showReadReceipt;
+
+  const _ChatListItem.message({
+    required this.message,
+    required this.isFirstInGroup,
+    required this.isLastInGroup,
+    required this.showReadReceipt,
+  }) : dateLabel = null;
+
+  const _ChatListItem.date(this.dateLabel)
+      : message = null,
+        isFirstInGroup = false,
+        isLastInGroup = false,
+        showReadReceipt = false;
+}
+
+List<_ChatListItem> _buildChatItems({
+  required List<MessageEntity> filtered,
+  required String myUid,
+  required int lastMyMessageIndex,
+}) {
+  const groupGap = Duration(minutes: 3);
+
+  bool sameGroup(MessageEntity? a, MessageEntity b) {
+    if (a == null) return false;
+    if (a.senderId != b.senderId) return false;
+    return a.timestamp.difference(b.timestamp).abs() < groupGap;
+  }
+
+  final items = <_ChatListItem>[];
+  for (var i = 0; i < filtered.length; i++) {
+    final current = filtered[i];
+    final newer = i > 0 ? filtered[i - 1] : null; // gần hiện tại hơn
+    final older = i + 1 < filtered.length ? filtered[i + 1] : null; // cũ hơn
+
+    items.add(_ChatListItem.message(
+      message: current,
+      isFirstInGroup: !sameGroup(older, current),
+      isLastInGroup: !sameGroup(newer, current),
+      showReadReceipt: current.senderId == myUid && i == lastMyMessageIndex,
+    ));
+
+    // `current` là tin CŨ NHẤT trong ngày của nó khi tin cũ hơn kế tiếp
+    // (nếu có) rơi vào một ngày khác -> chèn dải ngày ngay phía trên.
+    final isOldestOfDay =
+        older == null || !_isSameDay(older.timestamp, current.timestamp);
+    if (isOldestOfDay) {
+      items.add(_ChatListItem.date(_formatDateLabel(current.timestamp)));
+    }
+  }
+  return items;
+}
+
+bool _isSameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+String _formatDateLabel(DateTime dt) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final date = DateTime(dt.year, dt.month, dt.day);
+  final diff = today.difference(date).inDays;
+  if (diff == 0) return 'Hôm nay';
+  if (diff == 1) return 'Hôm qua';
+
+  const months = [
+    'Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', //
+    'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12', //
+  ];
+  final label = '${dt.day} ${months[dt.month - 1]}';
+  return dt.year == now.year ? label : '$label ${dt.year}';
+}
+
+class _DateSeparator extends StatelessWidget {
+  final String label;
+  const _DateSeparator({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Nút Gửi / Giữ Để Ghi Âm — có hiệu ứng scale nhẹ khi nhấn ──────────────
+
+class _SendButton extends StatefulWidget {
+  final bool isSending;
+  final bool isRecording;
+  final Color color;
+  final Color recordingColor;
+  final Color disabledColor;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onLongPressUp;
+
+  const _SendButton({
+    required this.isSending,
+    required this.isRecording,
+    required this.color,
+    required this.recordingColor,
+    required this.disabledColor,
+    required this.onTap,
+    required this.onLongPress,
+    required this.onLongPressUp,
+  });
+
+  @override
+  State<_SendButton> createState() => _SendButtonState();
+}
+
+class _SendButtonState extends State<_SendButton> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed != value) setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = widget.isSending
+        ? widget.disabledColor
+        : (widget.isRecording ? widget.recordingColor : widget.color);
+
+    return GestureDetector(
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
+      onLongPress: widget.onLongPress,
+      onLongPressUp: widget.onLongPressUp,
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _pressed ? 0.88 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            shape: BoxShape.circle,
+          ),
+          child: widget.isSending
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Icon(
+                  widget.isRecording ? Icons.mic : Icons.send_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+        ),
       ),
     );
   }
