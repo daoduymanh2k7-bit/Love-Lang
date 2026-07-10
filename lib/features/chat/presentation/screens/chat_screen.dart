@@ -329,8 +329,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       final file = File(filePath);
       if (file.existsSync()) file.deleteSync();
 
+      // Cấu hình chất lượng ghi âm dành riêng cho GIỌNG NÓI (không phải
+      // nhạc) — giảm khoảng 80% dung lượng file so với mặc định của package
+      // (44100Hz/128kbps/stereo), giúp gửi tin nhắn thoại nhanh hơn nhiều mà
+      // vẫn nghe rõ lời nói bình thường:
+      // - sampleRate 16000Hz: đủ cho dải tần giọng nói con người
+      // - bitRate 24000 (24kbps): tương đương mức mã hoá voice-note của các
+      //   app nhắn tin phổ biến, thấp hơn nhiều so với 128kbps mặc định
+      // - numChannels 1 (mono): micro điện thoại vốn chỉ thu 1 nguồn, ghi
+      //   stereo chỉ nhân đôi dữ liệu chứ không thêm thông tin thật
       await _audioRecorder.start(
-        const RecordConfig(encoder: AudioEncoder.aacLc),
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          sampleRate: 16000,
+          bitRate: 24000,
+          numChannels: 1,
+        ),
         path: filePath,
       );
       setState(() {
@@ -955,7 +969,7 @@ class _SendButtonState extends State<_SendButton> {
                     color: Colors.white,
                   ),
                 )
-              : Icon(
+              : const Icon(
                   // Luôn dùng icon "gửi" — kể cả lúc đang ghi âm, vì giờ nút
                   // này đóng vai trò "dừng & gửi" cuối cùng (giống mũi tên
                   // gửi trong thanh ghi âm), không còn ý nghĩa "đang là mic"
