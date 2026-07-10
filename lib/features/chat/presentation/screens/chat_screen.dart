@@ -1,6 +1,8 @@
 // lib/features/chat/presentation/screens/chat_screen.dart
 
+import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../../../core/services/notification_service.dart';
@@ -49,6 +51,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
   late final AudioRecorder _audioRecorder;
   bool _isRecording = false;
+
+  // ─── State bổ sung cho tính năng tạm dừng / hủy ghi âm ────────────────────
+  bool _isPaused = false;
+  Timer? _recordTicker;
+  int _recordMillis = 0; // Tổng thời gian đã ghi (không tính lúc pause)
+  final _rand = Random();
+  // Danh sách chiều cao các cột waveform, cập nhật liên tục để tạo cảm giác
+  // sóng âm đang "chạy" — không phải waveform thật từ amplitude micro, chỉ
+  // mang tính minh họa trực quan cho người dùng biết đang ghi.
+  final List<double> _waveformBars = List.generate(28, (_) => 4.0);
+
   final ImagePicker _imagePicker = ImagePicker();
 
   @override
@@ -91,6 +104,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     _scrollController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _audioRecorder.dispose();
+    _recordTicker?.cancel();
     super.dispose();
   }
 
@@ -159,6 +173,80 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     ref
         .read(chatSendNotifierProvider.notifier)
         .sendSticker(widget.coupleId, widget.myUid, stickerUrl);
+  }
+
+  // ─── Thanh ghi âm (hủy / tạm dừng-tiếp tục / waveform / thời lượng) ───────
+  Widget _buildRecordingBar(ColorScheme colorScheme) {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          // Nút hủy ghi âm (thùng rác) — dừng và xóa file, không gửi gì cả.
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(Icons.delete_outline, color: colorScheme.error),
+            tooltip: 'Hủy ghi âm',
+            onPressed: _cancelRecording,
+          ),
+          // Nút tạm dừng / tiếp tục ghi âm.
+          InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: _pauseResumeRecording,
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: colorScheme.primary,
+              child: Icon(
+                _isPaused ? Icons.mic : Icons.pause,
+                color: colorScheme.onPrimary,
+                size: 18,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Waveform minh họa — mờ đi khi đang pause để báo hiệu tạm dừng.
+          Expanded(
+            child: Opacity(
+              opacity: _isPaused ? 0.35 : 1.0,
+              child: SizedBox(
+                height: 24,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    for (final barHeight in _waveformBars)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 1.2),
+                        child: Container(
+                          width: 2.5,
+                          height: barHeight,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _formatRecordDuration(_recordMillis),
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+    );
   }
 
   void _showImageSourceSheet() {
@@ -245,7 +333,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         const RecordConfig(encoder: AudioEncoder.aacLc),
         path: filePath,
       );
-      setState(() => _isRecording = true);
+      setState(() {
+        _isRecording = true;
+        _isPaused = false;
+        _recordMillis = 0;
+        for (var i = 0; i < _waveformBars.length; i++) {
+          _waveformBars[i] = 4.0;
+        }
+      });
+      _startTicker();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -256,7 +352,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
   Future<void> _stopRecording() async {
     if (!_isRecording) return; // Tránh gọi stop() khi chưa từng start()
-    setState(() => _isRecording = false);
+    _stopTicker();
+    setState(() {
+      _isRecording = false;
+      _isPaused = false;
+    });
 
     try {
       final path = await _audioRecorder.stop();
@@ -272,6 +372,81 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         SnackBar(content: Text('Không thể dừng ghi âm: $e')),
       );
     }
+  }
+
+  /// Tạm dừng ghi âm mà chưa gửi — người dùng có thể bấm tiếp để ghi tiếp,
+  /// hoặc hủy/gửi sau đó. Đoạn ghi trước và sau khi pause vẫn nằm chung 1
+  /// file (record package tự nối liền khi resume()).
+  Future<void> _pauseResumeRecording() async {
+    if (!_isRecording) return;
+    try {
+      if (_isPaused) {
+        await _audioRecorder.resume();
+        _startTicker();
+        setState(() => _isPaused = false);
+      } else {
+        await _audioRecorder.pause();
+        _stopTicker();
+        setState(() => _isPaused = true);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể tạm dừng/tiếp tục ghi âm: $e')),
+      );
+    }
+  }
+
+  /// Hủy bản ghi hiện tại: dừng recorder, xóa file tạm, KHÔNG gửi gì cả.
+  Future<void> _cancelRecording() async {
+    if (!_isRecording) return;
+    _stopTicker();
+    setState(() {
+      _isRecording = false;
+      _isPaused = false;
+      _recordMillis = 0;
+    });
+
+    try {
+      final path = await _audioRecorder.stop();
+      if (path != null) {
+        final file = File(path);
+        if (file.existsSync()) file.deleteSync();
+      }
+    } catch (_) {
+      // Hủy ghi âm không thành công không quan trọng lắm vì đằng nào cũng
+      // không gửi gì — chỉ bỏ qua, tránh làm phiền người dùng bằng lỗi vặt.
+    }
+  }
+
+  // Cập nhật đồng hồ đếm giờ + hiệu ứng waveform mỗi 200ms khi đang ghi
+  // (và không bị pause).
+  void _startTicker() {
+    _recordTicker?.cancel();
+    _recordTicker = Timer.periodic(const Duration(milliseconds: 200), (_) {
+      if (!mounted) return;
+      setState(() {
+        _recordMillis += 200;
+        // Cuộn waveform sang trái, thêm 1 cột ngẫu nhiên mới ở cuối -> tạo
+        // cảm giác sóng âm đang chạy liên tục theo thời gian thực.
+        for (var i = 0; i < _waveformBars.length - 1; i++) {
+          _waveformBars[i] = _waveformBars[i + 1];
+        }
+        _waveformBars[_waveformBars.length - 1] = 4 + _rand.nextDouble() * 20;
+      });
+    });
+  }
+
+  void _stopTicker() {
+    _recordTicker?.cancel();
+    _recordTicker = null;
+  }
+
+  String _formatRecordDuration(int millis) {
+    final totalSeconds = millis ~/ 1000;
+    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
   }
 
   // ─── Xử lý Rung Thiết Bị ──────────────────────────────────────────────────
@@ -508,77 +683,86 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
               ),
               child: Row(
                 children: [
-                  // Nút đính kèm ảnh
-                  IconButton(
-                    icon: Icon(Icons.add_photo_alternate,
-                        color: (isSending || _isRecording)
-                            ? colorScheme.onSurface.withValues(alpha: 0.3)
-                            : colorScheme.onSurfaceVariant),
-                    onPressed:
-                        (isSending || _isRecording) ? null : _showImageSourceSheet,
-                  ),
-
-                  // Nút chọn sticker (GIPHY) -> mở bottom sheet chọn, gửi
-                  // ngay khi người dùng tap 1 sticker trong lưới.
-                  IconButton(
-                    icon: Icon(Icons.emoji_emotions_outlined,
-                        color: (isSending || _isRecording)
-                            ? colorScheme.onSurface.withValues(alpha: 0.3)
-                            : colorScheme.onSurfaceVariant),
-                    onPressed: (isSending || _isRecording)
-                        ? null
-                        : _openStickerPicker,
-                  ),
-
-                  // Nút ghi âm riêng: bấm để bắt đầu ghi, bấm lại để dừng
-                  // và gửi ngay — độc lập với thao tác GIỮ trên nút gửi
-                  // bên dưới (vẫn giữ nguyên cách cũ), cho người dùng thêm
-                  // 1 cách ghi âm không cần giữ tay liên tục.
-                  IconButton(
-                    icon: Icon(
-                      _isRecording ? Icons.stop_circle : Icons.mic_none,
-                      color: _isRecording
-                          ? colorScheme.error
-                          : (isSending
+                  // Nút đính kèm ảnh, nút sticker, nút mic-toggle: ẨN HẲN
+                  // (không chỉ disable) khi đang ghi âm — để thanh ghi âm có
+                  // đủ chỗ hiển thị đầy đủ (trước đó bị tràn 113px vì nhồi
+                  // chung với 3 nút này). Dùng `if` để loại hẳn khỏi cây
+                  // widget, không phải chỉ đổi màu xám như trước.
+                  if (!_isRecording) ...[
+                    // Nút đính kèm ảnh
+                    IconButton(
+                      icon: Icon(Icons.add_photo_alternate,
+                          color: isSending
                               ? colorScheme.onSurface.withValues(alpha: 0.3)
                               : colorScheme.onSurfaceVariant),
+                      onPressed: isSending ? null : _showImageSourceSheet,
                     ),
-                    onPressed: isSending
-                        ? null
-                        : (_isRecording ? _stopRecording : _startRecording),
-                  ),
 
-                  // Text Input
-                  Expanded(
-                    child: TextField(
-                      controller: _msgController,
-                      decoration: InputDecoration(
-                        hintText: _isRecording
-                            ? 'Đang ghi âm...'
-                            : 'Nhập tin nhắn...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: colorScheme.surfaceContainerHighest,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                      ),
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _sendText(),
+                    // Nút chọn sticker (GIPHY) -> mở bottom sheet chọn, gửi
+                    // ngay khi người dùng tap 1 sticker trong lưới.
+                    IconButton(
+                      icon: Icon(Icons.emoji_emotions_outlined,
+                          color: isSending
+                              ? colorScheme.onSurface.withValues(alpha: 0.3)
+                              : colorScheme.onSurfaceVariant),
+                      onPressed: isSending ? null : _openStickerPicker,
                     ),
+
+                    // Nút ghi âm riêng: bấm để bắt đầu ghi — độc lập với
+                    // thao tác GIỮ trên nút gửi bên dưới (vẫn giữ nguyên
+                    // cách cũ), cho người dùng thêm 1 cách ghi âm không cần
+                    // giữ tay liên tục. Một khi đã bắt đầu ghi, nút này ẩn
+                    // đi — dừng/hủy/gửi đều thao tác qua thanh ghi âm hoặc
+                    // nút gửi bên phải.
+                    IconButton(
+                      icon: Icon(Icons.mic_none,
+                          color: isSending
+                              ? colorScheme.onSurface.withValues(alpha: 0.3)
+                              : colorScheme.onSurfaceVariant),
+                      onPressed: isSending ? null : _startRecording,
+                    ),
+                  ],
+
+                  // Text Input hoặc Thanh ghi âm (trash/pause/waveform/timer)
+                  Expanded(
+                    child: _isRecording
+                        ? _buildRecordingBar(colorScheme)
+                        : TextField(
+                            controller: _msgController,
+                            decoration: InputDecoration(
+                              hintText: 'Nhập tin nhắn...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: colorScheme.surfaceContainerHighest,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                            ),
+                            textInputAction: TextInputAction.send,
+                            onSubmitted: (_) => _sendText(),
+                          ),
                   ),
                   const SizedBox(width: 8),
 
-                  // Nút Send / Hold-to-record
+                  // Nút Send / Hold-to-record. LUÔN giữ trong cây widget
+                  // (không ẩn bằng `if`) kể cả khi đang ghi âm, vì thao tác
+                  // "giữ để ghi âm" (long-press) có thể đang diễn ra ngay
+                  // trên chính nút này — nếu gỡ widget khỏi cây giữa chừng
+                  // gesture sẽ làm mất sự kiện onLongPressUp lúc thả tay.
+                  // Khi đang ghi âm, tap vào đây = dừng & gửi ngay (icon đổi
+                  // sang hình gửi thay vì mic, đúng vai trò "nút gửi" cuối
+                  // cùng như trong ảnh tham khảo).
                   _SendButton(
                     isSending: isSending,
                     isRecording: _isRecording,
                     color: colorScheme.primary,
                     recordingColor: colorScheme.error,
                     disabledColor: colorScheme.onSurface.withValues(alpha: 0.2),
-                    onTap: isSending ? null : _sendText,
+                    onTap: isSending
+                        ? null
+                        : (_isRecording ? _stopRecording : _sendText),
                     onLongPress: isSending ? null : _startRecording,
                     onLongPressUp: isSending ? null : _stopRecording,
                   ),
@@ -772,7 +956,11 @@ class _SendButtonState extends State<_SendButton> {
                   ),
                 )
               : Icon(
-                  widget.isRecording ? Icons.mic : Icons.send_rounded,
+                  // Luôn dùng icon "gửi" — kể cả lúc đang ghi âm, vì giờ nút
+                  // này đóng vai trò "dừng & gửi" cuối cùng (giống mũi tên
+                  // gửi trong thanh ghi âm), không còn ý nghĩa "đang là mic"
+                  // nữa vì mic đã có sẵn hình ảnh trong thanh ghi âm rồi.
+                  Icons.send_rounded,
                   color: Colors.white,
                   size: 20,
                 ),
