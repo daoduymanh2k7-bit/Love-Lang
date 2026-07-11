@@ -209,53 +209,63 @@ class _MainScreenState extends ConsumerState<MainScreen>
               ),
             ),
           if (_menuOpen) _buildRadialMenu(context),
-          Positioned(
+          // Ẩn thanh điều hướng dưới khi đang ở màn Trò chuyện (currentIndex
+          // == 1 trong _screens): trượt xuống dưới màn hình + IgnorePointer
+          // để không còn nhận tap khi đã ẩn (tránh bấm trúng thanh vô hình).
+          // Duration ngắn (180ms) để bắt kịp tốc độ chuyển screen của
+          // IndexedStack (vốn chuyển tức thì, không có animation riêng).
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeInOut,
             left: 12,
             right: 12,
-            bottom: 12,
-            child: SafeArea(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.75),
-                  borderRadius: BorderRadius.circular(24),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.9)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildNavItem(0, Icons.weekend_rounded,
-                          Icons.weekend_outlined, 'Phòng khách', navHighlight),
-                      _buildNavItem(
-                          1,
-                          Icons.chat_bubble_rounded,
-                          Icons.chat_bubble_outline_rounded,
-                          'Trò chuyện',
-                          navHighlight),
-                      _buildMenuButton(),
-                      _buildNavItem(
-                          3,
-                          Icons.auto_stories_rounded,
-                          Icons.auto_stories_outlined,
-                          'Thư viện',
-                          navHighlight),
-                      _buildNavItem(
-                          4,
-                          Icons.library_books_rounded,
-                          Icons.library_books_outlined,
-                          'Thư viện mới',
-                          navHighlight),
+            bottom: currentIndex == 1 ? -140 : 12,
+            child: IgnorePointer(
+              ignoring: currentIndex == 1,
+              child: SafeArea(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    borderRadius: BorderRadius.circular(24),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.9)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
+                  ),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildNavItem(0, Icons.weekend_rounded,
+                            Icons.weekend_outlined, 'Phòng khách', navHighlight),
+                        _buildNavItem(
+                            1,
+                            Icons.chat_bubble_rounded,
+                            Icons.chat_bubble_outline_rounded,
+                            'Trò chuyện',
+                            navHighlight),
+                        _buildMenuButton(),
+                        _buildNavItem(
+                            3,
+                            Icons.auto_stories_rounded,
+                            Icons.auto_stories_outlined,
+                            'Thư viện',
+                            navHighlight),
+                        _buildNavItem(
+                            4,
+                            Icons.library_books_rounded,
+                            Icons.library_books_outlined,
+                            'Thư viện mới',
+                            navHighlight),
+                      ],
+                    ),
                   ),
                 ),
               ),

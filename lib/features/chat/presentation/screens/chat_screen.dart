@@ -8,12 +8,16 @@ import 'package:flutter/material.dart';
 import '../../../../core/services/notification_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:love_lang/core/presentation/providers/main_tab_provider.dart';
+import 'package:love_lang/core/services/audio_service.dart';
+import 'package:love_lang/core/services/sound_effect.dart';
 import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_provider.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_state.dart';
 import 'package:love_lang/features/chat/presentation/widgets/message_bubble.dart';
 import 'package:love_lang/features/chat/presentation/widgets/sticker_picker_sheet.dart';
 import 'package:love_lang/features/pairing/presentation/providers/pairing_provider.dart';
+import 'package:love_lang/features/sound/presentation/providers/sound_settings_provider.dart';
 import 'package:love_lang/features/profile/presentation/screens/profile_screen.dart'
     show partnerUserProvider;
 import 'package:image_picker/image_picker.dart';
@@ -468,7 +472,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     bool? hasVibrator = await Vibration.hasVibrator();
     if (hasVibrator == true) {
       // Rung máy 150ms để thông báo đối phương đang chọc ghẹo
-      Vibration.vibrate(duration: 200, amplitude: 255);
+      Vibration.vibrate(duration: 150, amplitude: 255);
     }
   }
 
@@ -568,6 +572,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         elevation: 0,
         scrolledUnderElevation: 1,
         titleSpacing: 0,
+        // Nút quay lại Phòng khách — chỉ cần đổi mainTabProvider về 0, vì
+        // ChatScreen là 1 tab trong IndexedStack (không phải route được
+        // push), không dùng Navigator.pop(). Việc đổi tab này cũng chính
+        // là thứ khiến thanh điều hướng dưới ở main_screen.dart tự động
+        // trượt lên lại (xem AnimatedPositioned ở đó).
+        leading: IconButton(
+          icon: const Icon(Icons.chevron_left, size: 34),
+          onPressed: () {
+            // Phát SFX tabSwitch giống hệt lúc bấm chuyển tab ở thanh nav
+            // dưới (main_screen.dart), vì quay lại Phòng khách về bản chất
+            // cũng là 1 lần chuyển tab (mainTabProvider -> 0).
+            final soundSettings = ref.read(soundSettingsNotifierProvider);
+            ref.read(audioServiceProvider).playSfx(
+                  SoundEffect.tabSwitch,
+                  volume: soundSettings.sfxVolume,
+                  enabled: soundSettings.sfxEnabled,
+                );
+            ref.read(mainTabProvider.notifier).state = 0;
+          },
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -666,10 +690,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
           // ─── Khung Nhập Liệu ───
           SafeArea(
-            bottom: false,
             child: Container(
-              padding: EdgeInsets.fromLTRB(
-                  12, 8, 12, 8 + 72 + MediaQuery.of(context).padding.bottom),
+              // Trước đây cộng thêm 72px vào padding bottom để chừa chỗ cho
+              // thanh nav nổi ở main_screen.dart (nó luôn đè lên input).
+              // Giờ nav đã tự trượt ẩn khi vào Chat (xem AnimatedPositioned
+              // trong main_screen.dart), nên không cần chừa nữa — dùng
+              // SafeArea bình thường (bottom: true) để bám sát cạnh dưới
+              // màn hình, không còn khoảng trống thừa.
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
               decoration: BoxDecoration(
                 color: colorScheme.surface,
                 boxShadow: [
