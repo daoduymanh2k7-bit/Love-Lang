@@ -88,6 +88,10 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
   Future<void> sendText(
       String coupleId, String senderId, String content) async {
     state = const ChatSendLoading();
+    // Optimistic: phát SFX ngay, không chờ Firestore write (chỉ ghi 1
+    // document, không phải upload file — chờ xong mới phát sẽ tạo độ trễ
+    // không cần thiết). Lỗi mạng nếu có vẫn được báo riêng qua ChatSendError.
+    _playSfx(SoundEffect.message);
     try {
       final usecase = ref.read(sendMessageUseCaseProvider);
       final message = MessageEntity(
@@ -100,7 +104,6 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
       );
       await usecase(message);
       state = const ChatSendSuccess();
-      _playSfx(SoundEffect.message);
     } on Failure catch (e) {
       state = ChatSendError(e.message);
     } catch (e) {
@@ -112,6 +115,9 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
   Future<void> sendSticker(
       String coupleId, String senderId, String stickerUrl) async {
     state = const ChatSendLoading();
+    // Optimistic: xem giải thích ở sendText() — sticker cũng chỉ ghi 1
+    // document (URL có sẵn từ GIPHY, không phải upload file mới).
+    _playSfx(SoundEffect.message);
     try {
       final usecase = ref.read(sendMessageUseCaseProvider);
       final message = MessageEntity(
@@ -124,7 +130,6 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
       );
       await usecase(message);
       state = const ChatSendSuccess();
-      _playSfx(SoundEffect.message);
     } on Failure catch (e) {
       state = ChatSendError(e.message);
     } catch (e) {
@@ -138,14 +143,19 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
   /// và phòng khi cần ghi nhận ai là người nudge trong tương lai.
   Future<void> sendNudge(String coupleId, String senderId) async {
     state = const ChatSendLoading();
+    // FIX: phát SFX NGAY khi người dùng bấm, không chờ Firestore write
+    // xong. Trước đây SFX phát sau `await usecase(coupleId)` nên bị trễ
+    // theo network round-trip — trong khi rung máy (trigger qua stream
+    // listener của nudgeCountProvider ở chat_screen.dart) lại phản hồi
+    // nhanh hơn vì Firestore cập nhật snapshot từ local cache gần như tức
+    // thì. Kết quả là cảm giác "rung xong SFX mới vang", không đồng bộ.
+    // Nudge là hành động tức thời — phát optimistic, lỗi mạng (nếu có) đã
+    // được báo riêng qua ChatSendError.
+    _playSfx(SoundEffect.nudge);
     try {
       final usecase = ref.read(sendNudgeUseCaseProvider);
       await usecase(coupleId);
       state = const ChatSendSuccess();
-      // SFX nudge chỉ phát ở phía người gửi — phía nhận đã có hiệu ứng rung
-      // máy riêng (xem `nudgeCountProvider` listener trong chat_screen.dart),
-      // tránh chồng lặp cảm giác phản hồi.
-      _playSfx(SoundEffect.nudge);
     } on Failure catch (e) {
       state = ChatSendError(e.message);
     } catch (e) {

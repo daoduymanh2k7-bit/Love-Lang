@@ -93,10 +93,12 @@ class BucketListNotifier extends StateNotifier<AsyncValue<void>> {
 
   Future<void> addItem(BucketItemEntity item) async {
     state = const AsyncLoading();
+    // Optimistic: phát SFX ngay, không chờ Firestore write (chỉ ghi 1
+    // document, chờ xong mới phát sẽ tạo độ trễ không cần thiết).
+    _playSfx(SoundEffect.bucketList);
     try {
       await _addUseCase(item);
       state = const AsyncData(null);
-      _playSfx(SoundEffect.bucketList);
     } on Failure catch (e) {
       state = AsyncError(e, StackTrace.current);
     } catch (e) {
@@ -135,11 +137,12 @@ class BucketListNotifier extends StateNotifier<AsyncValue<void>> {
     String? completionImageUrl,
   }) async {
     state = const AsyncLoading();
+    // Optimistic: xem giải thích ở addItem().
+    _playSfx(SoundEffect.bucketList);
     try {
       await _markDoneUseCase(coupleId, itemId,
           linkedAlbumId: linkedAlbumId, completionImageUrl: completionImageUrl);
       state = const AsyncData(null);
-      _playSfx(SoundEffect.bucketList);
     } on Failure catch (e) {
       state = AsyncError(e, StackTrace.current);
     } catch (e) {

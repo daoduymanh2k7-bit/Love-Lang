@@ -467,8 +467,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   Future<void> _handleDeviceVibration() async {
     bool? hasVibrator = await Vibration.hasVibrator();
     if (hasVibrator == true) {
-      // Rung máy 500ms để thông báo đối phương đang chọc ghẹo
-      Vibration.vibrate(duration: 500, amplitude: 255);
+      // Rung máy 150ms để thông báo đối phương đang chọc ghẹo
+      Vibration.vibrate(duration: 200, amplitude: 255);
     }
   }
 

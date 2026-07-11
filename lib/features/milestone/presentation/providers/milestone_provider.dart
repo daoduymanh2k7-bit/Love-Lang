@@ -96,10 +96,12 @@ class MilestoneActionsNotifier extends StateNotifier<AsyncValue<void>> {
     required DateTime date,
   }) async {
     state = const AsyncLoading();
+    // Optimistic: phát SFX ngay, không chờ Firestore write (chỉ ghi 1
+    // document, chờ xong mới phát sẽ tạo độ trễ không cần thiết).
+    _playSfx(SoundEffect.milestone);
     state = await AsyncValue.guard(
       () => _addUseCase(coupleId, title: title, date: date),
     );
-    if (!state.hasError) _playSfx(SoundEffect.milestone);
   }
 
   Future<void> updateMilestone(
@@ -109,10 +111,11 @@ class MilestoneActionsNotifier extends StateNotifier<AsyncValue<void>> {
     required DateTime date,
   }) async {
     state = const AsyncLoading();
+    // Optimistic: xem giải thích ở addMilestone().
+    _playSfx(SoundEffect.milestone);
     state = await AsyncValue.guard(
       () => _updateUseCase(coupleId, milestoneId, title: title, date: date),
     );
-    if (!state.hasError) _playSfx(SoundEffect.milestone);
   }
 
   Future<void> deleteMilestone(String coupleId, String milestoneId) async {

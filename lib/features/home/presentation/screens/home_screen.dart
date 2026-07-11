@@ -48,30 +48,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             coupleId: widget.coupleId,
             currentUserId: widget.currentUserId,
           );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.favorite, color: Colors.white),
-                SizedBox(width: 8),
-                Text(
-                  'Đã chọc đối phương! 💕',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFFE8889A),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
