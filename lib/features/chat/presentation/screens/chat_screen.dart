@@ -568,21 +568,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         elevation: 0,
         scrolledUnderElevation: 1,
         titleSpacing: 0,
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: colorScheme.primaryContainer,
-              child: Text(
-                partnerInitial,
-                style: TextStyle(
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),

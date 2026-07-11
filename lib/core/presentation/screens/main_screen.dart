@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import 'package:love_lang/core/presentation/providers/main_tab_provider.dart';
+import 'package:love_lang/core/services/audio_service.dart';
+import 'package:love_lang/core/services/sound_effect.dart';
+import 'package:love_lang/features/sound/domain/entities/sound_settings_entity.dart';
+import 'package:love_lang/features/sound/presentation/providers/sound_settings_provider.dart';
 import 'package:love_lang/features/home/presentation/screens/home_screen.dart';
 import 'package:love_lang/features/chat/presentation/screens/chat_screen.dart';
 import 'package:love_lang/features/library/presentation/screens/library_screen.dart';
@@ -23,17 +27,46 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late final List<Widget> _screens;
   bool _menuOpen = false;
   late AnimationController _rotateController;
   late List<AnimationController> _itemControllers;
   late List<Animation<double>> _itemScales;
   late List<Animation<double>> _itemOpacities;
+  ProviderSubscription<SoundSettingsEntity>? _soundSettingsSub;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // BUG CŨ: đọc soundSettingsNotifierProvider bằng ref.read() một lần
+    // duy nhất trong addPostFrameCallback. Nếu SharedPreferences chưa load
+    // xong kịp lúc frame đầu tiên vẽ (thường xảy ra vì đó là 1 async I/O
+    // call), giá trị đọc được là default tạm thời — và vì chỉ đọc 1 lần,
+    // không có gì gọi lại playMusic()/pauseMusic() khi giá trị thật load
+    // xong sau đó => nhạc nền im re dù setting đã bật.
+    //
+    // FIX: dùng ref.listenManual để PHẢN ỨNG mỗi khi state thay đổi, kể cả
+    // lần cập nhật bất đồng bộ đầu tiên (fireImmediately: true để không bỏ
+    // lỡ giá trị hiện tại ngay khi đăng ký listener).
+    _soundSettingsSub = ref.listenManual<SoundSettingsEntity>(
+      soundSettingsNotifierProvider,
+      (previous, next) {
+        if (!mounted) return;
+        debugPrint(
+            'MainScreen: sound settings đổi -> musicEnabled=${next.musicEnabled}, musicVolume=${next.musicVolume}');
+        final audioService = ref.read(audioServiceProvider);
+        if (next.musicEnabled) {
+          audioService.playMusic(volume: next.musicVolume);
+        } else {
+          audioService.pauseMusic();
+        }
+      },
+      fireImmediately: true,
+    );
+
     _screens = [
       HomeScreen(
           coupleId: widget.coupleId, currentUserId: widget.currentUserId),
@@ -76,11 +109,37 @@ class _MainScreenState extends ConsumerState<MainScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _soundSettingsSub?.close();
     _rotateController.dispose();
     for (final c in _itemControllers) {
       c.dispose();
     }
     super.dispose();
+  }
+
+  // Tạm dừng nhạc nền khi app rời foreground, phát tiếp khi quay lại —
+  // chỉ khi người dùng đang bật nhạc nền trong Cài đặt (nếu đang tắt thì
+  // không có gì đang phát để resume).
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    final audioService = ref.read(audioServiceProvider);
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+        audioService.pauseMusic();
+        break;
+      case AppLifecycleState.resumed:
+        final settings = ref.read(soundSettingsNotifierProvider);
+        if (settings.musicEnabled) {
+          audioService.resumeMusic();
+        }
+        break;
+      case AppLifecycleState.detached:
+        break;
+    }
   }
 
   void _toggleMenu() {
@@ -107,6 +166,14 @@ class _MainScreenState extends ConsumerState<MainScreen>
     }
     final stackIndex = navIndex < 2 ? navIndex : navIndex - 1;
     ref.read(mainTabProvider.notifier).state = stackIndex;
+
+    final soundSettings = ref.read(soundSettingsNotifierProvider);
+    ref.read(audioServiceProvider).playSfx(
+          SoundEffect.tabSwitch,
+          volume: soundSettings.sfxVolume,
+          enabled: soundSettings.sfxEnabled,
+        );
+
     if (_menuOpen) {
       setState(() => _menuOpen = false);
       _rotateController.reverse();

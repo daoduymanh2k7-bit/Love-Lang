@@ -8,6 +8,7 @@ import 'package:love_lang/core/constants/firestore_paths.dart';
 import 'package:love_lang/core/theme/theme_provider.dart';
 import 'package:love_lang/features/auth/presentation/providers/auth_provider.dart';
 import 'package:love_lang/features/pairing/presentation/providers/pairing_provider.dart';
+import 'package:love_lang/features/sound/presentation/widgets/sound_settings_section.dart';
 
 final currentUserDocProvider = StreamProvider.autoDispose
     .family<Map<String, dynamic>?, String>((ref, uid) {
@@ -650,6 +651,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         ],
                       ),
+              ),
+
+              // ─── SECTION 3.5: ÂM THANH ───
+              _buildSectionHeader('ÂM THANH'),
+              Card(
+                color: cardColor,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: const SoundSettingsSection(),
               ),
 
               // ─── SECTION 4: GIAO DIỆN ───

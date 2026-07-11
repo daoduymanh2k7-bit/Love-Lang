@@ -8,6 +8,9 @@ import '../../domain/usecases/update_milestone_usecase.dart';
 import '../../domain/usecases/delete_milestone_usecase.dart';
 import '../../data/datasources/milestone_remote_datasource.dart';
 import '../../data/repositories/milestone_repository_impl.dart';
+import '../../../../core/services/audio_service.dart';
+import '../../../../core/services/sound_effect.dart';
+import '../../../sound/presentation/providers/sound_settings_provider.dart';
 
 // ─── Dependency wiring ─────────────────────────────────────────────────────
 // Lưu ý: KHÔNG khai báo lại `firestoreProvider` dùng chung ở đây, vì
@@ -65,15 +68,27 @@ class MilestoneActionsNotifier extends StateNotifier<AsyncValue<void>> {
   final AddMilestoneUseCase _addUseCase;
   final UpdateMilestoneUseCase _updateUseCase;
   final DeleteMilestoneUseCase _deleteUseCase;
+  final Ref _ref;
 
   MilestoneActionsNotifier({
     required AddMilestoneUseCase addUseCase,
     required UpdateMilestoneUseCase updateUseCase,
     required DeleteMilestoneUseCase deleteUseCase,
+    required Ref ref,
   })  : _addUseCase = addUseCase,
         _updateUseCase = updateUseCase,
         _deleteUseCase = deleteUseCase,
+        _ref = ref,
         super(const AsyncData(null));
+
+  void _playSfx(SoundEffect effect) {
+    final settings = _ref.read(soundSettingsNotifierProvider);
+    _ref.read(audioServiceProvider).playSfx(
+          effect,
+          volume: settings.sfxVolume,
+          enabled: settings.sfxEnabled,
+        );
+  }
 
   Future<void> addMilestone(
     String coupleId, {
@@ -84,6 +99,7 @@ class MilestoneActionsNotifier extends StateNotifier<AsyncValue<void>> {
     state = await AsyncValue.guard(
       () => _addUseCase(coupleId, title: title, date: date),
     );
+    if (!state.hasError) _playSfx(SoundEffect.milestone);
   }
 
   Future<void> updateMilestone(
@@ -96,6 +112,7 @@ class MilestoneActionsNotifier extends StateNotifier<AsyncValue<void>> {
     state = await AsyncValue.guard(
       () => _updateUseCase(coupleId, milestoneId, title: title, date: date),
     );
+    if (!state.hasError) _playSfx(SoundEffect.milestone);
   }
 
   Future<void> deleteMilestone(String coupleId, String milestoneId) async {
@@ -112,5 +129,6 @@ final milestoneActionsProvider =
     addUseCase: ref.watch(addMilestoneUseCaseProvider),
     updateUseCase: ref.watch(updateMilestoneUseCaseProvider),
     deleteUseCase: ref.watch(deleteMilestoneUseCaseProvider),
+    ref: ref,
   );
 });

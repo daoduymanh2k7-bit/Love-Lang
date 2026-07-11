@@ -3,6 +3,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:love_lang/core/error/failures.dart';
+import 'package:love_lang/core/services/audio_service.dart';
+import 'package:love_lang/core/services/sound_effect.dart';
 import 'package:love_lang/features/chat/data/datasources/chat_remote_datasource.dart';
 import 'package:love_lang/features/chat/data/repositories/chat_repository_impl.dart';
 import 'package:love_lang/features/chat/domain/entities/message_entity.dart';
@@ -13,6 +15,7 @@ import 'package:love_lang/features/chat/domain/usecases/send_nudge_usecase.dart'
 import 'package:love_lang/features/chat/domain/usecases/watch_messages_usecase.dart';
 import 'package:love_lang/features/chat/domain/usecases/watch_nudge_count_usecase.dart';
 import 'package:love_lang/features/chat/presentation/providers/chat_state.dart';
+import 'package:love_lang/features/sound/presentation/providers/sound_settings_provider.dart';
 
 final chatSendNotifierProvider =
     AutoDisposeNotifierProvider<ChatSendNotifier, ChatSendState>(
@@ -70,6 +73,17 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
     return const ChatSendInitial();
   }
 
+  /// Phát sound effect theo đúng cài đặt hiện tại của người dùng (bật/tắt +
+  /// âm lượng). Gọi sau khi 1 hành động gửi thành công.
+  void _playSfx(SoundEffect effect) {
+    final settings = ref.read(soundSettingsNotifierProvider);
+    ref.read(audioServiceProvider).playSfx(
+          effect,
+          volume: settings.sfxVolume,
+          enabled: settings.sfxEnabled,
+        );
+  }
+
   /// Gửi tin nhắn Text thông thường
   Future<void> sendText(
       String coupleId, String senderId, String content) async {
@@ -86,6 +100,7 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
       );
       await usecase(message);
       state = const ChatSendSuccess();
+      _playSfx(SoundEffect.message);
     } on Failure catch (e) {
       state = ChatSendError(e.message);
     } catch (e) {
@@ -109,6 +124,7 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
       );
       await usecase(message);
       state = const ChatSendSuccess();
+      _playSfx(SoundEffect.message);
     } on Failure catch (e) {
       state = ChatSendError(e.message);
     } catch (e) {
@@ -126,6 +142,10 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
       final usecase = ref.read(sendNudgeUseCaseProvider);
       await usecase(coupleId);
       state = const ChatSendSuccess();
+      // SFX nudge chỉ phát ở phía người gửi — phía nhận đã có hiệu ứng rung
+      // máy riêng (xem `nudgeCountProvider` listener trong chat_screen.dart),
+      // tránh chồng lặp cảm giác phản hồi.
+      _playSfx(SoundEffect.nudge);
     } on Failure catch (e) {
       state = ChatSendError(e.message);
     } catch (e) {
@@ -141,6 +161,7 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
       final usecase = ref.read(sendMessageUseCaseProvider);
       await usecase.sendVoice(coupleId, senderId, filePath);
       state = const ChatSendSuccess();
+      _playSfx(SoundEffect.message);
     } on Failure catch (e) {
       state = ChatSendError(e.message);
     } catch (e) {
@@ -156,6 +177,7 @@ class ChatSendNotifier extends AutoDisposeNotifier<ChatSendState> {
       final usecase = ref.read(sendMessageUseCaseProvider);
       await usecase.sendImage(coupleId, senderId, filePath);
       state = const ChatSendSuccess();
+      _playSfx(SoundEffect.message);
     } on Failure catch (e) {
       state = ChatSendError(e.message);
     } catch (e) {

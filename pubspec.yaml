@@ -41,3 +41,10 @@ flutter:
     - assets/images/library_decor_bookcase.png
     - assets/images/library_decor_album.png
     - assets/images/library_decor_board.png
+    - assets/audio/bg_music.mp3
+    - assets/audio/sfx_message.mp3
+    - assets/audio/sfx_nudge.mp3
+    - assets/audio/sfx_album.mp3
+    - assets/audio/sfx_milestone.mp3
+    - assets/audio/sfx_bucket_list.mp3
+    - assets/audio/sfx_tab_switch.mp3

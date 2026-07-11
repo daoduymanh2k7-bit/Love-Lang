@@ -12,6 +12,9 @@ import '../../domain/usecases/mark_bucket_item_done_usecase.dart';
 import '../../data/datasources/bucket_list_remote_datasource.dart';
 import '../../data/repositories/bucket_list_repository_impl.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/services/audio_service.dart';
+import '../../../../core/services/sound_effect.dart';
+import '../../../sound/presentation/providers/sound_settings_provider.dart';
 
 // ─── Infrastructure providers ─────────────────────────────────────────────────
 
@@ -64,23 +67,36 @@ class BucketListNotifier extends StateNotifier<AsyncValue<void>> {
   final UpdateBucketItemUseCase _updateUseCase;
   final DeleteBucketItemUseCase _deleteUseCase;
   final MarkBucketItemDoneUseCase _markDoneUseCase;
+  final Ref _ref;
 
   BucketListNotifier({
     required AddBucketItemUseCase addUseCase,
     required UpdateBucketItemUseCase updateUseCase,
     required DeleteBucketItemUseCase deleteUseCase,
     required MarkBucketItemDoneUseCase markDoneUseCase,
+    required Ref ref,
   })  : _addUseCase = addUseCase,
         _updateUseCase = updateUseCase,
         _deleteUseCase = deleteUseCase,
         _markDoneUseCase = markDoneUseCase,
+        _ref = ref,
         super(const AsyncData(null));
+
+  void _playSfx(SoundEffect effect) {
+    final settings = _ref.read(soundSettingsNotifierProvider);
+    _ref.read(audioServiceProvider).playSfx(
+          effect,
+          volume: settings.sfxVolume,
+          enabled: settings.sfxEnabled,
+        );
+  }
 
   Future<void> addItem(BucketItemEntity item) async {
     state = const AsyncLoading();
     try {
       await _addUseCase(item);
       state = const AsyncData(null);
+      _playSfx(SoundEffect.bucketList);
     } on Failure catch (e) {
       state = AsyncError(e, StackTrace.current);
     } catch (e) {
@@ -123,6 +139,7 @@ class BucketListNotifier extends StateNotifier<AsyncValue<void>> {
       await _markDoneUseCase(coupleId, itemId,
           linkedAlbumId: linkedAlbumId, completionImageUrl: completionImageUrl);
       state = const AsyncData(null);
+      _playSfx(SoundEffect.bucketList);
     } on Failure catch (e) {
       state = AsyncError(e, StackTrace.current);
     } catch (e) {
@@ -138,5 +155,6 @@ final bucketListNotifierProvider =
     updateUseCase: ref.watch(updateBucketItemUseCaseProvider),
     deleteUseCase: ref.watch(deleteBucketItemUseCaseProvider),
     markDoneUseCase: ref.watch(markBucketItemDoneUseCaseProvider),
+    ref: ref,
   );
 });

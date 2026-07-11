@@ -15,6 +15,9 @@ import '../../data/datasources/album_remote_datasource.dart';
 import '../../data/repositories/album_repository_impl.dart';
 import 'album_state.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/services/audio_service.dart';
+import '../../../../core/services/sound_effect.dart';
+import '../../../sound/presentation/providers/sound_settings_provider.dart';
 
 // ── Dependency providers ───────────────────────────────────────────────────
 
@@ -84,6 +87,7 @@ class AlbumNotifier extends StateNotifier<AlbumState> {
   final DeleteAlbumUseCase _deleteAlbumUseCase;
   final DeletePhotoUseCase _deletePhotoUseCase;
   final DeletePhotosUseCase _deletePhotosUseCase;
+  final Ref _ref;
 
   AlbumNotifier({
     required CreateAlbumUseCase createUseCase,
@@ -92,13 +96,24 @@ class AlbumNotifier extends StateNotifier<AlbumState> {
     required DeleteAlbumUseCase deleteAlbumUseCase,
     required DeletePhotoUseCase deletePhotoUseCase,
     required DeletePhotosUseCase deletePhotosUseCase,
+    required Ref ref,
   })  : _createUseCase = createUseCase,
         _uploadUseCase = uploadUseCase,
         _updateUseCase = updateUseCase,
         _deleteAlbumUseCase = deleteAlbumUseCase,
         _deletePhotoUseCase = deletePhotoUseCase,
         _deletePhotosUseCase = deletePhotosUseCase,
+        _ref = ref,
         super(const AlbumInitial());
+
+  void _playSfx(SoundEffect effect) {
+    final settings = _ref.read(soundSettingsNotifierProvider);
+    _ref.read(audioServiceProvider).playSfx(
+          effect,
+          volume: settings.sfxVolume,
+          enabled: settings.sfxEnabled,
+        );
+  }
 
   Future<String?> createAlbum(AlbumEntity album) async {
     state = const AlbumLoading();
@@ -126,6 +141,7 @@ class AlbumNotifier extends StateNotifier<AlbumState> {
     try {
       await _uploadUseCase(albumId, coupleId, uploaderId, localFilePaths);
       state = const AlbumLoaded();
+      _playSfx(SoundEffect.album);
     } on Failure catch (e) {
       state = AlbumError(e.message);
     } catch (e) {
@@ -202,5 +218,6 @@ final albumNotifierProvider =
     deleteAlbumUseCase: ref.watch(deleteAlbumUseCaseProvider),
     deletePhotoUseCase: ref.watch(deletePhotoUseCaseProvider),
     deletePhotosUseCase: ref.watch(deletePhotosUseCaseProvider),
+    ref: ref,
   );
 });
