@@ -548,13 +548,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     // các bong bóng chat. Chat 1-1 chỉ có đúng 1 đối phương nên lấy thẳng
     // từ CoupleEntity, không cần chọn ai trong danh sách.
     final coupleAsync = ref.watch(watchCoupleProvider(widget.coupleId));
+    String? partnerAvatarUrl;
     final partnerName = coupleAsync.maybeWhen(
           data: (couple) {
             if (couple == null) return null;
             final partnerUid = couple.partnerUidOf(widget.myUid);
             final partnerDocAsync = ref.watch(partnerUserProvider(partnerUid));
             return partnerDocAsync.maybeWhen(
-              data: (doc) => doc?['displayName'] as String?,
+              data: (doc) {
+                partnerAvatarUrl = doc?['avatarUrl'] as String?;
+                return doc?['displayName'] as String?;
+              },
               orElse: () => null,
             );
           },
@@ -678,6 +682,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                       message: message,
                       isMe: message.senderId == widget.myUid,
                       partnerInitial: partnerInitial,
+                      partnerAvatarUrl: partnerAvatarUrl,
                       isFirstInGroup: item.isFirstInGroup,
                       isLastInGroup: item.isLastInGroup,
                       showReadReceipt: item.showReadReceipt,

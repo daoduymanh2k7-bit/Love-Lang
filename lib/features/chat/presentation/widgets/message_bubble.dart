@@ -13,6 +13,10 @@ class MessageBubble extends StatefulWidget {
   /// nào của chính mình bị hiện avatar (chat 1-1 chỉ cần avatar đối phương).
   final String partnerInitial;
 
+  /// URL ảnh đại diện thật của đối phương (nếu đã đổi avatar). Null thì
+  /// vẫn fallback về chữ cái đầu (partnerInitial) như cũ.
+  final String? partnerAvatarUrl;
+
   /// true nếu đây là tin ĐẦU TIÊN trong 1 cụm tin liên tiếp cùng người gửi
   /// (cách nhau chưa tới vài phút) — quyết định bo góc "đỉnh cụm".
   final bool isFirstInGroup;
@@ -31,6 +35,7 @@ class MessageBubble extends StatefulWidget {
     required this.message,
     required this.isMe,
     this.partnerInitial = '?',
+    this.partnerAvatarUrl,
     this.isFirstInGroup = true,
     this.isLastInGroup = true,
     this.showReadReceipt = false,
@@ -209,14 +214,19 @@ class _MessageBubbleState extends State<MessageBubble>
     return CircleAvatar(
       radius: 14,
       backgroundColor: colorScheme.primaryContainer,
-      child: Text(
-        widget.partnerInitial,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: colorScheme.onPrimaryContainer,
-        ),
-      ),
+      backgroundImage: widget.partnerAvatarUrl != null
+          ? CachedNetworkImageProvider(widget.partnerAvatarUrl!)
+          : null,
+      child: widget.partnerAvatarUrl == null
+          ? Text(
+              widget.partnerInitial,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onPrimaryContainer,
+              ),
+            )
+          : null,
     );
   }
 

@@ -1,8 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:love_lang/core/constants/firestore_paths.dart';
 import 'package:love_lang/core/theme/theme_provider.dart';
@@ -159,6 +163,60 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  /// Chọn ảnh từ thư viện, upload lên Cloudinary (dùng chung bucket với
+  /// album, xem album_remote_datasource.dart), rồi cập nhật cả:
+  /// - Firestore: users/{uid}.avatarUrl (để hiển thị trong app, đồng bộ
+  ///   realtime qua currentUserDocProvider).
+  /// - FirebaseAuth: currentUser.photoURL (để đồng bộ với các nơi khác có
+  ///   thể đọc trực tiếp từ FirebaseAuth, ví dụ dùng chung logic với
+  ///   updateDisplayName ở _editDisplayName()).
+  Future<void> _changeAvatar() async {
+    final picker = ImagePicker();
+    final XFile? picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1024,
+    );
+    if (picked == null) return; // Người dùng bấm Hủy khi chọn ảnh
+    if (!mounted) return;
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    // Hiện loading trong lúc upload — tái sử dụng đúng kiểu dialog như
+    // _editDisplayName() để đồng nhất trải nghiệm.
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final cloudinary =
+          CloudinaryPublic('dq3bk50q9', 'love_lang_bucket', cache: false);
+      final response = await cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          picked.path,
+          resourceType: CloudinaryResourceType.Image,
+          folder: 'avatars',
+        ),
+      );
+
+      await FirebaseFirestore.instance
+          .doc(FirestorePaths.userDoc(widget.currentUserId))
+          .update({'avatarUrl': response.secureUrl});
+      await FirebaseAuth.instance.currentUser
+          ?.updatePhotoURL(response.secureUrl);
+    } catch (e) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Lỗi đổi ảnh đại diện: $e')),
+      );
+    } finally {
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop(); // Đóng loading
+      }
+    }
   }
 
   Future<void> _changePassword() async {
@@ -439,6 +497,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         error: (err, stack) => Center(child: Text('Lỗi: $err')),
         data: (myDoc) {
           final myName = myDoc?['displayName'] as String? ?? 'Chưa đặt tên';
+          final avatarUrl = myDoc?['avatarUrl'] as String?;
           final email =
               FirebaseAuth.instance.currentUser?.email ?? 'Chưa có email';
           final joinDate = _formatJoinDate(myDoc?['createdAt']);
@@ -457,25 +516,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          const CircleAvatar(
-                            radius: 45,
-                            backgroundColor: Color(0xFFE8889A),
-                            child: Icon(Icons.person,
-                                size: 55, color: Colors.white),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFE8889A),
-                              shape: BoxShape.circle,
+                      // BUG CŨ: cả Stack này (avatar + icon camera) chỉ là
+                      // UI tĩnh, không có GestureDetector/onTap nào cả, nên
+                      // icon camera trông như 1 nút bấm được nhưng thực ra
+                      // không làm gì. Bọc GestureDetector gọi _changeAvatar()
+                      // để chọn ảnh + upload Cloudinary + lưu Firestore.
+                      GestureDetector(
+                        onTap: _changeAvatar,
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            CircleAvatar(
+                              radius: 45,
+                              backgroundColor: const Color(0xFFE8889A),
+                              backgroundImage: avatarUrl != null
+                                  ? CachedNetworkImageProvider(avatarUrl)
+                                  : null,
+                              child: avatarUrl == null
+                                  ? const Icon(Icons.person,
+                                      size: 55, color: Colors.white)
+                                  : null,
                             ),
-                            child: const Icon(Icons.camera_alt,
-                                size: 16, color: Colors.white),
-                          ),
-                        ],
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE8889A),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.camera_alt,
+                                  size: 16, color: Colors.white),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
                       ListTile(
