@@ -45,10 +45,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
             data?[FirestorePaths.userPairingStatus] as String? ??
                 FirestorePaths.pairingStatusNone;
         final coupleId = data?[FirestorePaths.userCoupleId] as String?;
+        final profileSetupPrompted =
+            data?[FirestorePaths.userProfileSetupPrompted] as bool? ?? false;
         state = Authenticated(
           user: user,
           pairingStatus: pairingStatus,
           coupleId: coupleId,
+          profileSetupPrompted: profileSetupPrompted,
         );
       }
     }, onError: (error) {
@@ -93,6 +96,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         await _firestore.doc(FirestorePaths.userDoc(user.uid)).set({
           FirestorePaths.userCoupleId: null,
           FirestorePaths.userPairingStatus: FirestorePaths.pairingStatusNone,
+          FirestorePaths.userProfileSetupPrompted: false,
         });
       }
     } on FirebaseAuthException catch (e) {

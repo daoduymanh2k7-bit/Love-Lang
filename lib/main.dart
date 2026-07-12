@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:love_lang/core/presentation/screens/main_screen.dart';
 import 'package:love_lang/firebase_options.dart';
 import 'package:love_lang/features/auth/presentation/screens/auth_screen.dart';
+import 'package:love_lang/features/auth/presentation/screens/profile_setup_screen.dart';
 import 'package:love_lang/features/auth/presentation/providers/auth_provider.dart';
 import 'package:love_lang/features/auth/presentation/providers/auth_state.dart';
 import 'package:love_lang/features/pairing/presentation/screens/enter_invite_screen.dart';
@@ -58,9 +59,14 @@ class MainApp extends ConsumerWidget {
             coupleId: authState.coupleId!,
             currentUserId: authState.user.uid,
           );
-        } else {
-          return const EnterInviteScreen();
         }
+        // Chưa pair -> hỏi tên/avatar đúng 1 lần trước khi vào màn nhập mã
+        // mời, để đối phương thấy tên/avatar thật thay vì trống khi ghép
+        // đôi. Đã hỏi rồi (dù lưu hay bỏ qua) thì bỏ qua bước này luôn.
+        if (!authState.profileSetupPrompted) {
+          return ProfileSetupScreen(currentUserId: authState.user.uid);
+        }
+        return const EnterInviteScreen();
       }
 
       // Mặc định hoặc khi Unauthenticated/AuthError -> chuyển sang AuthScreen

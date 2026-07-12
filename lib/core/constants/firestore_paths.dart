@@ -41,6 +41,11 @@ abstract final class FirestorePaths {
   // ─── Field Names: User Document ───────────────────────────────────────────
   static const String userCoupleId = 'coupleId';
   static const String userPairingStatus = 'pairingStatus';
+  static const String userDisplayName = 'displayName';
+  static const String userAvatarUrl = 'avatarUrl';
+  // true sau khi user đã thấy màn "Đặt tên & avatar" (dù lưu hay bấm Bỏ
+  // qua) — dùng để chỉ hỏi đúng 1 lần, không hỏi lại các lần đăng nhập sau.
+  static const String userProfileSetupPrompted = 'profileSetupPrompted';
 
   // ─── Invite Status Values ──────────────────────────────────────────────────
   static const String statusPending = 'pending';
